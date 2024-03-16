@@ -1,6 +1,7 @@
 import clue_messaging
 import pickle
 import socket
+import time
 import threading
 
 
@@ -25,17 +26,20 @@ def show_main_menu():
             print("Invalid choice. Please enter 1 or 2.")
 
 def show_create_game_popup():
+    global player_name
     # Create and display GUI elements for the pop-up that appears after you select "Join Game"
     # Should include a space to ender in the game ID of the game you want to join
 
     # Text based version
-    return input("Enter your name: ")
+    player_name = input("Enter your name: ")
 
 def show_join_game_popup():
+    global player_name
     # Create and display GUI elements for the pop-up that appears after you select "Join Game"
     # Should include a space to ender in the game ID of the game you want to join
 
     # Text based version
+    player_name = input("Enter your name: ")
     return input("Enter the ID of the game you want to join: ")
 
 def show_lobby_menu():
@@ -116,25 +120,34 @@ def send_message(message, host='localhost', port=12345):
 def process_message(host='localhost', port=12346):
     # Process message received from server and call functions to update the GUI accordingly
     while True:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind((host, port))
-            s.listen()
-            conn, addr = s.accept()
-            with conn:
-                print('Connected by', addr)
-                # Receive the message length
-                message_length_bytes = conn.recv(4)
-                message_length = int.from_bytes(message_length_bytes, byteorder='big')
-                # Receive the serialized message
-                serialized_message = b''
-                while len(serialized_message) < message_length:
-                    serialized_message += conn.recv(message_length - len(serialized_message))
-                # Deserialize the message object using pickle
-                message = pickle.loads(serialized_message)
-                print('Received message:')
-                print('Type:', message.message_type)
-                print('Sender ID:', message.sender_id)
-                print('Data:', message.data)
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind((host, port))
+                s.listen()
+                conn, addr = s.accept()
+                with conn:
+                    print('Connected by', addr)
+                    # Receive the message length
+                    message_length_bytes = conn.recv(4)
+                    message_length = int.from_bytes(message_length_bytes, byteorder='big')
+                    # Receive the serialized message
+                    serialized_message = b''
+                    while len(serialized_message) < message_length:
+                        serialized_message += conn.recv(message_length - len(serialized_message))
+                    # Deserialize the message object using pickle
+                    message = pickle.loads(serialized_message)
+                    print('Received message:')
+                    print('Type:', message.message_type)
+                    print('Sender ID:', message.sender_id)
+                    print('Data:', message.data)
+                    # TODO: Set a flag here in the message is of the start game type
+        except:
+            # TODO: Replace port stuff with with a permanent solution
+            print("Couldn't bind on port, trying next port")
+            port = port + 1
+
+# Global values
+player_name = ""
 
 '''
 Main
@@ -146,17 +159,20 @@ def main():
     receive_message_thread.daemon = True
     receive_message_thread.start()
 
-    while True: # TODO: This loop is for testing and demonstration
-        choice = show_main_menu()
-        if choice == '1':
-            player_name = show_create_game_popup()
-            create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.CREATE_GAME, player_name, None)
-            send_message(create_game_message)
-            # Call function to create a new game
-        else:
-            game_id = show_join_game_popup()
-            create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.JOIN_GAME, "Tommy Testname", int(game_id))
-            send_message(create_game_message)
+    
+    choice = show_main_menu()
+    if choice == '1':
+        show_create_game_popup()
+        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.CREATE_GAME, player_name, None)
+        send_message(create_game_message)
+        # Call function to create a new game
+    else:
+        game_id = show_join_game_popup()
+        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.JOIN_GAME, player_name, int(game_id))
+        send_message(create_game_message)
+
+    while True:
+        time.sleep(2)
 
 if __name__ == "__main__":
     main()

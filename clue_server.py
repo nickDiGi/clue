@@ -27,7 +27,8 @@ def handle_player_action():
 '''
 Functions for messaging
 '''
-def send_message(message, host, port=12346):
+# TODO: Replace port stuff with with a permanent solution
+def send_message(message, host, port):
     # Apply any additional formatting and send message to client
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -72,9 +73,12 @@ def process_message(host='localhost', port=12345):
                             player_names.append(player.get_name())
                     print("Players now the lobby: " + str(player_names))
                     create_game_response =  clue_messaging.Message(clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE, game.get_id(), player_names)
+                    # TODO: Replace port stuff with with a permanent solution
+                    index = 0
                     for player in game.get_players():
-                        send_message(create_game_response, player.get_address()[0])
+                        send_message(create_game_response, player.get_address()[0], (12346+index))
                         print("Sent lobby update to " + player.get_name())
+                        index = index + 1
 
                 elif (message.message_type == clue_messaging.Message_Types.JOIN_GAME):
                     try:
@@ -87,11 +91,17 @@ def process_message(host='localhost', port=12345):
                                 player_names.append(player.get_name())
                         print("Players now the lobby: " + str(player_names))
                         create_game_response =  clue_messaging.Message(clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE, game.get_id(), player_names)
+                        # TODO: Replace port stuff with with a permanent solution
+                        index = 0
                         for player in game.get_players():
-                            send_message(create_game_response, player.get_address()[0])
+                            send_message(create_game_response, player.get_address()[0], (12346+index))
                             print("Sent lobby update to " + player.get_name())
-                    except:
-                        print("Sorry, we couldn't find that game")
+                            index = index + 1
+
+                        if len(player_names) == 3: game.deal_cards()
+
+                    except Exception as e:
+                        print("Sorry, we couldn't find that game: ", e)
                 else:
                     print("Error, unknown message type received")
 

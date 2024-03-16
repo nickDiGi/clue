@@ -1,21 +1,8 @@
-import socket
+import clue_messaging
 import pickle
+import socket
 import threading
-from enum import Enum
 
-'''
-Classes used to format messages
-'''
-class Message:
-    def __init__(self, message_type, sender_id, data):
-        self.message_type = message_type
-        self.sender_id = sender_id
-        self.data = data
-
-class Message_Types(Enum):
-    CREATE_GAME = 1
-    JOIN_GAME = 2
-    LOBBY_ROSTER_UPDATE = 3
 
 '''
 Functions for displaying GUI elements
@@ -47,7 +34,9 @@ def show_create_game_popup():
 def show_join_game_popup():
     # Create and display GUI elements for the pop-up that appears after you select "Join Game"
     # Should include a space to ender in the game ID of the game you want to join
-    pass
+
+    # Text based version
+    return input("Enter the ID of the game you want to join: ")
 
 def show_lobby_menu():
     # Create and display GUI elements for the lobby menu
@@ -161,11 +150,12 @@ def main():
         choice = show_main_menu()
         if choice == '1':
             player_name = show_create_game_popup()
-            create_game_message =  Message(Message_Types.CREATE_GAME, player_name, None)
+            create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.CREATE_GAME, player_name, None)
             send_message(create_game_message)
             # Call function to create a new game
         else:
-            create_game_message =  Message(Message_Types.JOIN_GAME, "Temp-Name", 95417)
+            game_id = show_join_game_popup()
+            create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.JOIN_GAME, "Tommy Testname", int(game_id))
             send_message(create_game_message)
 
 if __name__ == "__main__":

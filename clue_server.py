@@ -98,7 +98,18 @@ def process_message(host='localhost', port=12345):
                             print("Sent lobby update to " + player.get_name())
                             index = index + 1
 
-                        if len(player_names) == 3: game.deal_cards()
+                        if len(player_names) == 3:
+                            game.deal_cards()
+                            game.set_player_positions()
+                            # TODO: Replace port stuff with with a permanent solution
+                            index = 0
+                            for player in game.get_players():
+                                print("\n")
+                                print(player)
+                                player_info_update =  clue_messaging.Message(clue_messaging.Message_Types.PLAYER_INFO_UPDATE, game.get_id(), player)
+                                send_message(player_info_update, player.get_address()[0], (12346+index))
+                                print("Sent player info update to " + player.get_name())
+                                index = index + 1
 
                     except Exception as e:
                         print("Sorry, we couldn't find that game: ", e)

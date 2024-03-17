@@ -3,7 +3,8 @@ import pickle
 import socket
 import time
 import threading
-
+# TODO: Replace clue_game_logic with an interface the provides less visibility
+import clue_game_logic
 
 '''
 Functions for displaying GUI elements
@@ -113,7 +114,7 @@ def send_message(message, host='localhost', port=12345):
             message_length = len(serialized_message)
             s.sendall(message_length.to_bytes(4, byteorder='big'))
             s.sendall(serialized_message)
-        print("Sent")
+        print("Connecting...")
     except Exception as e:
         print("Error occurred while sending message:", e)
 
@@ -126,7 +127,6 @@ def process_message(host='localhost', port=12346):
                 s.listen()
                 conn, addr = s.accept()
                 with conn:
-                    print('Connected by', addr)
                     # Receive the message length
                     message_length_bytes = conn.recv(4)
                     message_length = int.from_bytes(message_length_bytes, byteorder='big')
@@ -136,14 +136,14 @@ def process_message(host='localhost', port=12346):
                         serialized_message += conn.recv(message_length - len(serialized_message))
                     # Deserialize the message object using pickle
                     message = pickle.loads(serialized_message)
-                    print('Received message:')
+                    print('\nReceived message:')
                     print('Type:', message.message_type)
                     print('Sender ID:', message.sender_id)
                     print('Data:', message.data)
                     # TODO: Set a flag here in the message is of the start game type
         except:
             # TODO: Replace port stuff with with a permanent solution
-            print("Couldn't bind on port, trying next port")
+            print("Port in use, trying next port")
             port = port + 1
 
 # Global values
@@ -159,6 +159,8 @@ def main():
     receive_message_thread.daemon = True
     receive_message_thread.start()
 
+    # TODO: This is a temp sleep to ensure initial logging in receive_message_thread doesn't overlap initial prompts
+    time.sleep(1)
     
     choice = show_main_menu()
     if choice == '1':

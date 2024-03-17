@@ -13,3 +13,4 @@ class Message_Types(Enum):
     CREATE_GAME = 1
     JOIN_GAME = 2
     LOBBY_ROSTER_UPDATE = 3
+    PLAYER_INFO_UPDATE = 4

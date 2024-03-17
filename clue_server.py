@@ -43,7 +43,7 @@ def send_message(message, host, port):
     except Exception as e:
         print("Error occurred while sending message:", e)
 
-def process_message(host='localhost', port=12345):
+def receive_message(host='localhost', port=12345):
     # Process message received from client and call functions to handle accordingly
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -62,59 +62,70 @@ def process_message(host='localhost', port=12345):
                     serialized_message += conn.recv(message_length - len(serialized_message))
                 # Deserialize the message object using pickle
                 message = pickle.loads(serialized_message)
-                if (message.message_type == clue_messaging.Message_Types.CREATE_GAME):
-                    # Create game
-                    game = clue_game_logic.Game_Session(message.sender_id, addr)
-                    # Add game to the collection of games, with it's ID as it's key
-                    ongoing_games[game.get_id()] = game
-                    print("Added player " + message.sender_id + " to game with lobby ID " + str(game.get_id()))
-                    player_names = []
-                    for player in game.get_players():
-                            player_names.append(player.get_name())
-                    print("Players now the lobby: " + str(player_names))
-                    create_game_response =  clue_messaging.Message(clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE, game.get_id(), player_names)
-                    # TODO: Replace port stuff with with a permanent solution
-                    index = 0
-                    for player in game.get_players():
-                        send_message(create_game_response, player.get_address()[0], (12346+index))
-                        print("Sent lobby update to " + player.get_name())
-                        index = index + 1
+                process_message(message, addr)
+                
 
-                elif (message.message_type == clue_messaging.Message_Types.JOIN_GAME):
-                    try:
-                        game = ongoing_games[message.data]
-                        print("Game Found Matching Given ID")
-                        game.add_player(message.sender_id, addr)
-                        print("Added player " + message.sender_id + " to game with lobby ID " + str(game.get_id()))
-                        player_names = []
-                        for player in game.get_players():
-                                player_names.append(player.get_name())
-                        print("Players now the lobby: " + str(player_names))
-                        create_game_response =  clue_messaging.Message(clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE, game.get_id(), player_names)
-                        # TODO: Replace port stuff with with a permanent solution
-                        index = 0
-                        for player in game.get_players():
-                            send_message(create_game_response, player.get_address()[0], (12346+index))
-                            print("Sent lobby update to " + player.get_name())
-                            index = index + 1
+def process_message(message, addr):
+    if (message.message_type == clue_messaging.Message_Types.CREATE_GAME):
+        # Create game
+        game = clue_game_logic.Game_Session(message.sender_id, addr)
+        # Add game to the collection of games, with it's ID as it's key
+        ongoing_games[game.get_id()] = game
+        print("Added player " + message.sender_id + " to game with lobby ID " + str(game.get_id()))
+        player_names = []
+        for player in game.get_players():
+                player_names.append(player.get_name())
+        print("Players now the lobby: " + str(player_names))
+        create_game_response =  clue_messaging.Message(clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE, game.get_id(), player_names, None)
+        # TODO: Replace port stuff with with a permanent solution
+        index = 0
+        for player in game.get_players():
+            send_message(create_game_response, player.get_address()[0], (12346+index))
+            print("Sent lobby update to " + player.get_name())
+            index = index + 1
 
-                        if len(player_names) == 3:
-                            game.deal_cards()
-                            game.set_player_positions()
-                            # TODO: Replace port stuff with with a permanent solution
-                            index = 0
-                            for player in game.get_players():
-                                print("\n")
-                                print(player)
-                                player_info_update =  clue_messaging.Message(clue_messaging.Message_Types.PLAYER_INFO_UPDATE, game.get_id(), player)
-                                send_message(player_info_update, player.get_address()[0], (12346+index))
-                                print("Sent player info update to " + player.get_name())
-                                index = index + 1
+    elif (message.message_type == clue_messaging.Message_Types.JOIN_GAME):
+        try:
+            game = ongoing_games[message.game_state_data]
+            print("Game Found Matching Given ID")
+            game.add_player(message.sender_id, addr)
+            print("Added player " + message.sender_id + " to game with lobby ID " + str(game.get_id()))
+            player_names = []
+            for player in game.get_players():
+                    player_names.append(player.get_name())
+            print("Players now the lobby: " + str(player_names))
+            create_game_response =  clue_messaging.Message(clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE, game.get_id(), player_names, None)
+            # TODO: Replace port stuff with with a permanent solution
+            index = 0
+            for player in game.get_players():
+                send_message(create_game_response, player.get_address()[0], (12346+index))
+                print("Sent lobby update to " + player.get_name())
+                index = index + 1
 
-                    except Exception as e:
-                        print("Sorry, we couldn't find that game: ", e)
-                else:
-                    print("Error, unknown message type received")
+            # TODO: Make this happen after a start game message is received
+            if len(player_names) == 3:
+                game.deal_cards()
+                game.set_player_positions()
+                # TODO: Replace port stuff with with a permanent solution
+                index = 0
+                players = game.get_players()
+                board_info = ''
+                # Parse list of players to grab info about their character and where they are on the board
+                for player in players:
+                    board_info = board_info + ((player.get_name() + " is playing as " + str(player.get_character()) + " and starting in " + str(player.get_position()) + "\n"))
+                 # Send message to each player with the positions of other players and their own player info
+                for player in players:
+                    print("\n")
+                    print(player)
+                    game_state_update =  clue_messaging.Message(clue_messaging.Message_Types.GAME_STATE_UPDATE, game.get_id(), board_info, player)
+                    send_message(game_state_update, player.get_address()[0], (12346+index))
+                    print("Sent update to " + player.get_name())
+                    index = index + 1
+
+        except Exception as e:
+            print("Sorry, we couldn't find that game: ", e)
+    else:
+        print("Error, unknown message type received")
 
 # Global dictionary to store ongoing games
 ongoing_games = {}
@@ -125,7 +136,7 @@ Main
 def main():
     # Start the server to receive the message
     print("Server Started")
-    process_message()
+    receive_message()
     pass
 
 if __name__ == "__main__":

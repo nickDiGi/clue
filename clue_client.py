@@ -118,7 +118,7 @@ def send_message(message, host='localhost', port=12345):
     except Exception as e:
         print("Error occurred while sending message:", e)
 
-def process_message(host='localhost', port=12346):
+def receive_message(host='localhost', port=12346):
     # Process message received from server and call functions to update the GUI accordingly
     while True:
         try:
@@ -136,15 +136,40 @@ def process_message(host='localhost', port=12346):
                         serialized_message += conn.recv(message_length - len(serialized_message))
                     # Deserialize the message object using pickle
                     message = pickle.loads(serialized_message)
-                    print('\nReceived message:')
-                    print('Type:', message.message_type)
-                    print('Sender ID:', message.sender_id)
-                    print('Data:', message.data)
-                    # TODO: Set a flag here in the message is of the start game type
+                    process_message(message)
         except:
             # TODO: Replace port stuff with with a permanent solution
             print("Port in use, trying next port")
             port = port + 1
+
+def process_message(message):
+    try:
+        if (message.message_type == clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE):
+            # TODO: Format this data into a message showing only the Game ID and list of players in the lobby
+            print('\nReceived message:')
+            print('Type:', message.message_type)
+            print('Sender ID:', message.sender_id)
+            print('Game State Data:', message.game_state_data)
+            print('Player Data:', message.player_state_data)
+
+        elif (message.message_type == clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION):
+            # TODO: Give a notification to the client player that it is their turn
+            pass
+
+        elif (message.message_type == clue_messaging.Message_Types.GAME_STATE_UPDATE):
+            # TODO: Format this data into a message listing all player's new positions,
+            #       and showing the client player's character and list of cards
+            print('\nReceived message:')
+            print('Type:', message.message_type)
+            print('Sender ID:', message.sender_id)
+            print('Game State Data:', message.game_state_data)
+            print('Player Data:', message.player_state_data)
+
+        # TODO: If the GAME_STATE_UPDATE is not sufficient, add other message types to handle players taking their turns
+            
+    except Exception as e:
+        print("Error occurred while processing message:", e)
+    # TODO: Set a flag here in the message is of the start game type
 
 # Global values
 player_name = ""
@@ -155,7 +180,7 @@ Main
 def main():
 
     # Start receiving messages in a separate thread
-    receive_message_thread = threading.Thread(target=process_message)
+    receive_message_thread = threading.Thread(target=receive_message)
     receive_message_thread.daemon = True
     receive_message_thread.start()
 
@@ -165,12 +190,12 @@ def main():
     choice = show_main_menu()
     if choice == '1':
         show_create_game_popup()
-        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.CREATE_GAME, player_name, None)
+        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.CREATE_GAME, player_name, None, None)
         send_message(create_game_message)
         # Call function to create a new game
     else:
         game_id = show_join_game_popup()
-        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.JOIN_GAME, player_name, int(game_id))
+        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.JOIN_GAME, player_name, int(game_id), None)
         send_message(create_game_message)
 
     while True:

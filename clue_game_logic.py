@@ -96,6 +96,7 @@ class Game_Session:
         self.players = [
             Player(name, address, []),
         ]
+        # TODO: Check below random number to ensure that it does not match the ID of an existing game
         self.id = random.randint(10000, 99999)
         self.turn_number = 0
 

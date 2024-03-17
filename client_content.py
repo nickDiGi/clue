@@ -19,7 +19,7 @@ def draw_menu():
         WINDOW,
         (WIDTH / 2) - (BTN_WIDTH / 2),
         (HEIGHT / 2) - (BTN_HEIGHT / 2),
-        "Join a game",
+        "Select a Character",
     )
     join_game_btn.draw()
     return join_game_btn.clicked()

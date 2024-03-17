@@ -42,7 +42,7 @@ def draw_characters():
             display_y += 300
             display_x = 200
         char = Character(
-            WINDOW, display_x, display_y, 150, 250, f"../assets/{file_names[i]}.png"
+            WINDOW, display_x, display_y, 150, 250, f"./assets/{file_names[i]}.png"
         )
         char.draw()
         display_x += 200

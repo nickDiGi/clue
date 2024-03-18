@@ -65,6 +65,17 @@ def draw_characters():
         display_x += 225
         if char.clicked():
             print(file_names[i].replace("_", " "))
+            send_character_to_backend(selected character)
+
+def send_character_to_backend(character):
+    try:
+        response = requests.post(BACKEND_URL, json = {"character": character})
+        if response.status_code == 200:
+            print("Thank you for selecting character!")
+        else:
+            print("Failed to select character. Please try again.")
+    except Exception as e:
+        print ("An error has occured.", str(e)) 
 
 
 # run pygame

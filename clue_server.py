@@ -63,6 +63,32 @@ def receive_message(host='localhost', port=12345):
                 # Deserialize the message object using pickle
                 message = pickle.loads(serialized_message)
                 process_message(message, addr)
+
+class RequestHandler(BaseHTTP):
+    def do_POST(self):
+        if self.path == '/select_character':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self-rfile.read(content_length)
+            selected_character = pickle.loads(post_data)
+            print("Selected character:", selected_character)
+            self.send_response(200)
+            self.send_header(Content-type, 'text/plain')
+            self.end_header()
+            self.wfile.write(b'Character selection successful')
+        else:
+            self.send_response(404)
+            self.send_header(Content-type, 'text/plain')
+            self.end_header()
+            self.wfile.write(b'Not found')
+
+class ThreadedHTTP(ThreadedMixIn, HTTPServer):
+    pass
+
+def run_server():
+    server_address = ('', 8000)
+    server = ThreadedHTTP(server_address, RequestHandler)
+    print('Starting server...')
+    server.serve_forever()
                 
 
 def process_message(message, addr):
@@ -137,7 +163,7 @@ def main():
     # Start the server to receive the message
     print("Server Started")
     receive_message()
-    pass
+    run_server()
 
 if __name__ == "__main__":
     main()

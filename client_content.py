@@ -3,7 +3,7 @@ from constants import *
 from button import Button
 from character import Character
 
-BACKEND_URL = "http://localhost:8000/select_chracter"
+BACKEND_URL = "http://localhost:8000/select_character"
 
 # initialize pygame
 pygame.init()

@@ -1,4 +1,4 @@
-WIDTH, HEIGHT = 1000, 1000
+WIDTH, HEIGHT = 1400, 1000
 FPS = 60
 FILL_COLOR = (220, 220, 220)
 LINE_COLOR = (0, 0, 0)
@@ -9,5 +9,5 @@ SIZE = WIDTH // ROWS
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-BTN_WIDTH = WIDTH / 4  # previously 3
+BTN_WIDTH = WIDTH / 6  # previously 4
 BTN_HEIGHT = HEIGHT / 8  # previously 8

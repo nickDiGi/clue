@@ -3,8 +3,39 @@ import pickle
 import socket
 import time
 import threading
-# TODO: Replace clue_game_logic with an interface the provides less visibility
+# TODO: Replace clue_game_logic with an interface that provides less visibility
 import clue_game_logic
+
+room_coordinates = {
+    clue_game_logic.Room.LOUNGE: (4, 4),
+    clue_game_logic.Room.HALL: (4, 2),
+    clue_game_logic.Room.STUDY: (4, 0),
+    clue_game_logic.Room.LIBRARY: (2, 0),
+    clue_game_logic.Room.BILLIARD_ROOM: (2, 2),
+    clue_game_logic.Room.DINING_ROOM: (2, 4),
+    clue_game_logic.Room.CONSERVATORY: (0, 0),
+    clue_game_logic.Room.BALLROOM: (0, 2),
+    clue_game_logic.Room.KITCHEN: (0, 4),
+    clue_game_logic.Room.HALLWAY_CONS_BALR: (0, 1),
+    clue_game_logic.Room.HALLWAY_BALR_KITC: (0, 3),
+    clue_game_logic.Room.HALLWAY_CONS_LIBR: (1, 0),
+    clue_game_logic.Room.HALLWAY_LIBR_STDY: (3, 0),
+    clue_game_logic.Room.HALLWAY_HALL_LOUG: (4, 3),
+    clue_game_logic.Room.HALLWAY_DINR_LOUG: (3, 4),
+    clue_game_logic.Room.HALLWAY_BALR_BILR: (1, 2),
+    clue_game_logic.Room.HALLWAY_KITC_DINR: (1, 4),
+    clue_game_logic.Room.HALLWAY_LIBR_BILR: (2, 1),
+    clue_game_logic.Room.HALLWAY_BILR_DINR: (2, 3),
+    clue_game_logic.Room.HALLWAY_BILR_HALL: (3, 2),
+    clue_game_logic.Room.HALLWAY_STDY_HALL: (4, 1)
+}
+
+def get_key_by_value(dictionary, value):
+    for key, val in dictionary.items():
+        if val == value:
+            return key
+    # If the value is not found, return None or raise an exception
+    return None
 
 '''
 Functions for displaying GUI elements
@@ -153,7 +184,60 @@ def process_message(message):
             print('Player Data:', message.player_state_data)
 
         elif (message.message_type == clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION):
-            # TODO: Give a notification to the client player that it is their turn
+            print('\nIts your turn!')
+            # Process where the player can move and present their options for moving
+            position = message.player_state_data.get_position()
+            print('You are currently in the ' + str(position))
+            print('You can move to:')
+            x = room_coordinates[position][0]
+            y = room_coordinates[position][1]
+            # TODO: This can be a loop
+            # TODO: Check if a character is already in any of these hallways
+            # TODO: Add secret passages
+            choices = {}
+            index = 1
+            adjacent_cord = (x-1,y)
+            room_name = get_key_by_value(room_coordinates, adjacent_cord)
+            if(room_name is not None):
+                print(str(index) + " : " + room_name.name)
+                choices[index] = room_name
+                index = index + 1
+            adjacent_cord = (x+1,y)
+            room_name = get_key_by_value(room_coordinates, adjacent_cord)
+            if(room_name is not None):
+                print(str(index) + " : " + room_name.name)
+                choices[index] = room_name
+                index = index + 1
+            adjacent_cord = (x,y-1)
+            room_name = get_key_by_value(room_coordinates, adjacent_cord)
+            if(room_name is not None):
+                print(str(index) + " : " + room_name.name)
+                choices[index] = room_name
+                index = index + 1
+            adjacent_cord = (x,y+1)
+            room_name = get_key_by_value(room_coordinates, adjacent_cord)
+            if(room_name is not None):
+                print(str(index) + " : " + room_name.name)
+                choices[index] = room_name
+                index = index + 1
+
+            print(choices)
+            new_position = None
+            while new_position is None:
+                given_position = input("Enter the number of the room where would you like to move: ")
+                print(choices[int(given_position)])
+                if choices[int(given_position)] in clue_game_logic.Room:
+                    print("Found it!")
+                else:
+                    print("That is not a valid room, try again.")
+
+            # If the player is in a room (not a hallway), give them the option to suggest
+            if new_position.value < 22:
+                print('Make a suggestion:')
+                # List players and weapons
+                # Let the player select a player and weapon to suggest
+            else:
+                print('You cannot make a suggestion from a hallway')
             pass
 
         elif (message.message_type == clue_messaging.Message_Types.GAME_STATE_UPDATE):
@@ -162,8 +246,11 @@ def process_message(message):
             print('\nReceived message:')
             print('Type:', message.message_type)
             print('Sender ID:', message.sender_id)
-            print('Game State Data:', message.game_state_data)
+            print('Game State Data:\n', message.game_state_data)
             print('Player Data:', message.player_state_data)
+
+        else:
+            print('WARN: Bad message type received')
 
         # TODO: If the GAME_STATE_UPDATE is not sufficient, add other message types to handle players taking their turns
             

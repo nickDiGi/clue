@@ -2,6 +2,7 @@ import clue_game_logic
 import clue_messaging
 import pickle
 import socket
+import time # TODO Remove this
 
 '''
 Functions for handling game-state changes
@@ -133,24 +134,33 @@ def process_message(message, addr):
 
             # TODO: Make this happen after a start game message is received
             if len(player_names) == 3:
+                # Deal cards and set starting positions
                 game.deal_cards()
                 game.set_player_positions()
-                # TODO: Replace port stuff with with a permanent solution
-                index = 0
+
+                # Parse list of players to grab info about their character and where they are on the board
                 players = game.get_players()
                 board_info = ''
-                # Parse list of players to grab info about their character and where they are on the board
                 for player in players:
                     board_info = board_info + ((player.get_name() + " is playing as " + str(player.get_character()) + " and starting in " + str(player.get_position()) + "\n"))
-                 # Send message to each player with the positions of other players and their own player info
+
+                # Send message to each player with the positions of other players and their own player info
+                index = 0
                 for player in players:
                     print("\n")
                     print(player)
                     game_state_update =  clue_messaging.Message(clue_messaging.Message_Types.GAME_STATE_UPDATE, game.get_id(), board_info, player)
-                    send_message(game_state_update, player.get_address()[0], (12346+index))
+                    send_message(game_state_update, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
                     print("Sent update to " + player.get_name())
+                    # Notify the player who's turn it is that it is their turn
+                    if player.turn_order_number == 1:
+                        time.sleep(.5) # TODO : Add threading and remove this
+                        turn_notification =  clue_messaging.Message(clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION, game.get_id(), board_info, player)
+                        send_message(turn_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+                        print("Sent turn notification to " + player.get_name())
                     index = index + 1
-
+                    time.sleep(.5) # TODO : Add threading and remove this
+                    
         except Exception as e:
             print("Sorry, we couldn't find that game: ", e)
     else:

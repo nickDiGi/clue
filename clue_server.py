@@ -163,6 +163,31 @@ def process_message(message, addr):
                     
         except Exception as e:
             print("Sorry, we couldn't find that game: ", e)
+
+    elif (message.message_type == clue_messaging.Message_Types.GAME_STATE_UPDATE):
+        print('\nReceived update message from a client:')
+        print('Type:', message.message_type)
+        print('Game Session:', message.sender_id)
+        print('Player Data:', message.player_state_data)
+        game = ongoing_games[message.sender_id]
+        game_turn_number = game.get_turn_number() + 1
+        if game_turn_number > 6:
+            game_turn_number = 1
+        game.set_turn_number(game_turn_number)
+
+        players = game.get_players()
+
+        board_info = ''
+        for player in players:
+            board_info = board_info + ((player.get_name() + "(" + str(player.get_character()) + ") is currently in the " + str(player.get_position()) + "\n"))
+
+        index = 0
+        for player in players:
+            if player.turn_order_number == game_turn_number:
+                        turn_notification =  clue_messaging.Message(clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION, game.get_id(), board_info, player)
+                        send_message(turn_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+                        print("Sent turn notification to " + player.get_name())
+            index = index + 1
     else:
         print("Error, unknown message type received")
 

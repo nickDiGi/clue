@@ -72,7 +72,9 @@ def show_join_game_popup():
 
     # Text based version
     player_name = input("Enter your name: ")
-    return input("Enter the ID of the game you want to join: ")
+    game_id = input("Enter the ID of the game you want to join: ")
+    print("Connecting...")
+    return game_id
 
 def show_lobby_menu():
     # Create and display GUI elements for the lobby menu
@@ -145,7 +147,6 @@ def send_message(message, host='localhost', port=12345):
             message_length = len(serialized_message)
             s.sendall(message_length.to_bytes(4, byteorder='big'))
             s.sendall(serialized_message)
-        print("Connecting...")
     except Exception as e:
         print("Error occurred while sending message:", e)
 
@@ -174,8 +175,10 @@ def receive_message(host='localhost', port=12346):
             port = port + 1
 
 def process_message(message):
+    global game_id
     try:
         if (message.message_type == clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE):
+            game_id = message.sender_id
             # TODO: Format this data into a message showing only the Game ID and list of players in the lobby
             print('\nReceived message:')
             print('Type:', message.message_type)
@@ -185,8 +188,9 @@ def process_message(message):
 
         elif (message.message_type == clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION):
             print('\nIts your turn!')
+            player_state = message.player_state_data
             # Process where the player can move and present their options for moving
-            position = message.player_state_data.get_position()
+            position = player_state.get_position()
             print('You are currently in the ' + str(position))
             print('You can move to:')
             x = room_coordinates[position][0]
@@ -227,18 +231,22 @@ def process_message(message):
                 given_position = input("Enter the number of the room where would you like to move: ")
                 print(choices[int(given_position)])
                 if choices[int(given_position)] in clue_game_logic.Room:
-                    print("Found it!")
+                    new_position = choices[int(given_position)]
                 else:
                     print("That is not a valid room, try again.")
 
+            player_state.set_position(new_position)
+            create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.GAME_STATE_UPDATE, game_id, None, player_state)
+            send_message(create_game_message)
+
             # If the player is in a room (not a hallway), give them the option to suggest
             if new_position.value < 22:
-                print('Make a suggestion:')
-                # List players and weapons
-                # Let the player select a player and weapon to suggest
+                # print('Make a suggestion:')
+                # TODO: List players and weapons
+                # TODO: Let the player select a player and weapon to suggest
+                pass
             else:
                 print('You cannot make a suggestion from a hallway')
-            pass
 
         elif (message.message_type == clue_messaging.Message_Types.GAME_STATE_UPDATE):
             # TODO: Format this data into a message listing all player's new positions,
@@ -260,6 +268,7 @@ def process_message(message):
 
 # Global values
 player_name = ""
+game_id = 0
 
 '''
 Main

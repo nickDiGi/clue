@@ -64,7 +64,10 @@ def receive_message(host='localhost', port=12345):
                 message = pickle.loads(serialized_message)
                 process_message(message, addr)
 
-class RequestHandler(BaseHTTP):
+# Commented out HTTP code because I was having trouble running it an did not understand its purpose.
+# TODO: Get a demo of the code from Nicole 
+
+# class RequestHandler(BaseHTTP):
     def do_POST(self):
         if self.path == '/select_character':
             content_length = int(self.headers['Content-Length'])
@@ -81,10 +84,10 @@ class RequestHandler(BaseHTTP):
             self.end_header()
             self.wfile.write(b'Not found')
 
-class ThreadedHTTP(ThreadedMixIn, HTTPServer):
+# class ThreadedHTTP(ThreadedMixIn, HTTPServer):
     pass
 
-def run_server():
+# def run_server():
     server_address = ('', 8000)
     server = ThreadedHTTP(server_address, RequestHandler)
     print('Starting server...')
@@ -163,7 +166,7 @@ def main():
     # Start the server to receive the message
     print("Server Started")
     receive_message()
-    run_server()
+    # run_server()
 
 if __name__ == "__main__":
     main()

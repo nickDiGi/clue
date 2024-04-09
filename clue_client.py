@@ -176,6 +176,8 @@ def receive_message(host='localhost', port=12346):
 
 def process_message(message):
     global game_id
+    global board_info
+    
     try:
         if (message.message_type == clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE):
             game_id = message.sender_id
@@ -232,6 +234,13 @@ def process_message(message):
                 print(choices[int(given_position)])
                 if choices[int(given_position)] in clue_game_logic.Room:
                     new_position = choices[int(given_position)]
+                    for player in board_info:
+                        print("Other player's position is " + str(player.get_position()) + " != " + str(new_position))
+                        if player.get_position() == new_position:
+                            # TODO : Check if this is a room or hallway
+                            print("That position is already occupied!")
+                            new_position = None
+                            break
                 else:
                     print("That is not a valid room, try again.")
 
@@ -252,9 +261,15 @@ def process_message(message):
             # TODO: Format this data into a message listing all player's new positions,
             #       and showing the client player's character and list of cards
             print('\nReceived message:')
+            board_info = message.game_state_data
             print('Type:', message.message_type)
             print('Sender ID:', message.sender_id)
-            print('Game State Data:\n', message.game_state_data)
+            #print('Game State Data:\n', message.game_state_data)
+            print('Game State Data:\n')
+            for player in board_info:
+                print(player.get_name())
+                print(player.get_character())
+                print(player.get_position())
             print('Player Data:', message.player_state_data)
 
         else:
@@ -269,6 +284,7 @@ def process_message(message):
 # Global values
 player_name = ""
 game_id = 0
+board_info = [] # An array that will contain the players in the game and their data
 
 '''
 Main

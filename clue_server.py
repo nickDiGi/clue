@@ -140,9 +140,14 @@ def process_message(message, addr):
 
                 # Parse list of players to grab info about their character and where they are on the board
                 players = game.get_players()
-                board_info = ''
+                #board_info = ''
+                board_info = []
                 for player in players:
-                    board_info = board_info + ((player.get_name() + " is playing as " + str(player.get_character()) + " and starting in " + str(player.get_position()) + "\n"))
+                    #board_info = board_info + ((player.get_name() + "(" + str(player.get_character()) + ") is currently in the " + str(player.get_position()) + "\n"))
+                    stripped_player = clue_game_logic.Player(player.get_name(), None, [])
+                    stripped_player.set_character(player.get_character())
+                    stripped_player.set_position(player.get_position())
+                    board_info.append(stripped_player)
 
                 # Send message to each player with the positions of other players and their own player info
                 index = 0
@@ -171,15 +176,42 @@ def process_message(message, addr):
         print('Player Data:', message.player_state_data)
         game = ongoing_games[message.sender_id]
         game_turn_number = game.get_turn_number() + 1
-        if game_turn_number > 6:
+        if game_turn_number > 3: # TODO: Make this 3 a 6
             game_turn_number = 1
         game.set_turn_number(game_turn_number)
 
         players = game.get_players()
 
-        board_info = ''
+        # Update the data for the player who sent the update
+        index = 0
+        while index < len(players):
+            player = players[index]
+            print("Player named " + player.get_name() + " is not player " + message.player_state_data.get_name())
+            if player.get_name() == message.player_state_data.get_name():
+                print("Just kidding! Updating the player data!")
+                players[index] = message.player_state_data
+                break # TODO Maybe get rid of this break
+            index = index + 1
+
+        #board_info = ''
+        board_info = []
         for player in players:
-            board_info = board_info + ((player.get_name() + "(" + str(player.get_character()) + ") is currently in the " + str(player.get_position()) + "\n"))
+            #board_info = board_info + ((player.get_name() + "(" + str(player.get_character()) + ") is currently in the " + str(player.get_position()) + "\n"))
+            stripped_player = clue_game_logic.Player(player.get_name(), None, [])
+            stripped_player.set_character(player.get_character())
+            stripped_player.set_position(player.get_position())
+            board_info.append(stripped_player)
+
+        for player in players:
+            print("Player " + str(player.get_name()) + " is now in " + str(player.get_position()))
+
+        index = 0
+        for player in players:
+            game_state_update =  clue_messaging.Message(clue_messaging.Message_Types.GAME_STATE_UPDATE, game.get_id(), board_info, player)
+            send_message(game_state_update, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+            print("Sent update to " + player.get_name())
+            index = index + 1
+            time.sleep(.5)
 
         index = 0
         for player in players:

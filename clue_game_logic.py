@@ -57,6 +57,7 @@ class Player:
         self.turn_order_number = None
         self.character = None
         self.position = None
+        self.lost_game = False
 
     def get_name(self):
         return self.name
@@ -87,6 +88,12 @@ class Player:
 
     def get_position(self):
         return self.position
+    
+    def set_lost_game(self, lost_game):
+        self.lost_game = lost_game
+
+    def get_lost_game(self):
+        return self.lost_game
     
     def __str__(self):
         return f"Player(name='{self.name}', turn_order_number={self.turn_order_number}, character='{self.character}', position='{self.position}, cards={self.cards}')"

@@ -115,19 +115,17 @@ def update_game_state(message):
     index = 0
     while index < len(players):
         player = players[index]
-        print("Player named " + player.get_name() + " is not player " + message.player_state_data.get_name())
         if player.get_name() == message.player_state_data.get_name():
-            print("Just kidding! Updating the player data!")
             players[index] = message.player_state_data
             break # TODO Maybe get rid of this break
         index = index + 1
 
     board_info = []
     for player in players:
-        #board_info = board_info + ((player.get_name() + "(" + str(player.get_character()) + ") is currently in the " + str(player.get_position()) + "\n"))
         stripped_player = clue_game_logic.Player(player.get_name(), None, [])
         stripped_player.set_character(player.get_character())
         stripped_player.set_position(player.get_position())
+        stripped_player.set_lost_game(player.get_lost_game())
         board_info.append(stripped_player)
 
     for player in players:
@@ -142,12 +140,22 @@ def update_game_state(message):
         time.sleep(.5)
 
     index = 0
-    for player in players:
-        if player.turn_order_number == game_turn_number:
-                    turn_notification =  clue_messaging.Message(clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION, game.get_id(), board_info, player)
-                    send_message(turn_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
-                    print("Sent turn notification to " + player.get_name())
-        index = index + 1
+    turn_notification_sent = False
+    while not turn_notification_sent:
+        for player in players:
+            if player.get_turn_order_number() == game_turn_number:
+                        if player.get_lost_game() == True:
+                            print("Skipping " + player.get_name() + " because they have lost")
+                            game_turn_number = game.get_turn_number() + 1
+                            if game_turn_number > 3: # TODO: Make this 3 a 6
+                                game_turn_number = 1
+                            game.set_turn_number(game_turn_number)
+                        else:
+                            turn_notification =  clue_messaging.Message(clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION, game.get_id(), board_info, player)
+                            send_message(turn_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+                            turn_notification_sent = True
+                            print("Sent turn notification to " + player.get_name())
+            index = index + 1
 
 # Handles server-side logic for when a player makes an accusation.
 def handle_accusation_action(message):
@@ -161,9 +169,24 @@ def handle_accusation_action(message):
     game = ongoing_games[message.sender_id]
     winning_cards = game.get_winning_cards()
     if message.game_state_data == winning_cards:
-        print("They won!")
+        print("*** They won!")
+        index = 0
+        players = game.get_players()
+        for player in players:
+            if player.get_name() == message.player_state_data.get_name():
+                you_won_notification = clue_messaging.Message(clue_messaging.Message_Types.YOU_WON_NOTIFICATION, game.get_id(), None, player.get_name())
+                send_message(you_won_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+            else:
+                game_over_notification = clue_messaging.Message(clue_messaging.Message_Types.GAME_OVER_NOTIFICATION, game.get_id(), None, message.player_state_data.get_name())
+                send_message(game_over_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+            index = index + 1
+        del ongoing_games[message.sender_id]
+        print("Game removed from ongoing games. \n\nOngoing games: " + str(ongoing_games))
     else:
-        print("They lost!")
+        print("*** They lost!")
+        # Set the losing player's lost_game value to true
+        message.player_state_data.set_lost_game(True)
+        update_game_state(message)
 
 
 '''

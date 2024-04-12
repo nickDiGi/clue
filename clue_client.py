@@ -140,7 +140,9 @@ def update_game_board(new_player_info):
         print('\nPLAYERS HAVE MOVED!')
     player_info = new_player_info
     for player in player_info:
-        print((player.get_character().name) + " (" + (player.get_name( )) + ") is in the " + (player.get_position().name))
+        print((player.get_character().name) + " (" + (player.get_name()) + ") is in the " + (player.get_position().name))
+        if player.get_lost_game():
+            print("*** " + (player.get_character().name) + " (" + (player.get_name()) + ") made an incorrect accusation. They have lost the game and cannot move.")
 
 
 # Create and display GUI elements for the pop-up that appears when it is your turn to move
@@ -270,6 +272,8 @@ def handle_suggest(player_state):
 
 # Handle collecting user input for the accusation and sending it to the server
 def handle_accuse(player_state):
+    global turn_ended
+
     suspect_list = list(clue_game_logic.Suspect)
     suspects = (', '.join(suspect.name for suspect in suspect_list))
     weapon_list = list(clue_game_logic.Weapon)
@@ -305,6 +309,7 @@ def handle_accuse(player_state):
             print("Invalid room, try again")
 
     chosen_cards = [suspect_mapping.get(chosen_suspect), weapon_mapping.get(chosen_weapon), room_mapping.get(chosen_room)]
+    turn_ended = True
 
     accusation_action_message =  clue_messaging.Message(clue_messaging.Message_Types.ACCUSATION_ACTION, game_id, chosen_cards, player_state)
     send_message(accusation_action_message)
@@ -399,7 +404,17 @@ def process_message(message):
                 print('4. View Cards')
                 action = input("Enter the number of the action you would like to take: ")
                 player_state = message.player_state_data
-                action_options.get(action, show_error_popup)(player_state)       
+                action_options.get(action, show_error_popup)(player_state)
+
+        elif (message.message_type == clue_messaging.Message_Types.GAME_OVER_NOTIFICATION):
+            print('\n##############################')
+            print('## GAME OVER ' + message.player_state_data.upper() + " HAS WON ##")
+            print('##############################')
+
+        elif (message.message_type == clue_messaging.Message_Types.YOU_WON_NOTIFICATION):
+            print('\n#########################')
+            print('##       YOU WIN       ##')
+            print('#########################')
 
         else:
             print('WARN: Bad message type received')

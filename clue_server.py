@@ -193,7 +193,6 @@ def process_message(message, addr):
                 break # TODO Maybe get rid of this break
             index = index + 1
 
-        #board_info = ''
         board_info = []
         for player in players:
             #board_info = board_info + ((player.get_name() + "(" + str(player.get_character()) + ") is currently in the " + str(player.get_position()) + "\n"))
@@ -220,6 +219,22 @@ def process_message(message, addr):
                         send_message(turn_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
                         print("Sent turn notification to " + player.get_name())
             index = index + 1
+
+    elif (message.message_type == clue_messaging.Message_Types.ACCUSATION_ACTION):
+        print('\nReceived update message from a client:')
+        print('Type:', message.message_type)
+        print('Game Session:', message.sender_id)
+        print('Player Data:', message.player_state_data)
+        print('Their guess: ' + str(message.game_state_data))
+
+        game = ongoing_games[message.sender_id]
+        winning_cards = game.get_winning_cards()
+
+        if message.game_state_data == winning_cards:
+            print("They won!")
+        else:
+            print("They lost!")
+
     else:
         print("Error, unknown message type received")
 

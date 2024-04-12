@@ -15,6 +15,7 @@ player_info = [] # An array that will contain the players in the game and their 
 # Constants
 HALLWAY_LIMIT = 22
 
+# Mapping used to find available moves for a player
 room_coordinates = {
     clue_game_logic.Room.LOUNGE: (4, 4),
     clue_game_logic.Room.HALL: (4, 2),
@@ -60,9 +61,10 @@ def get_key_by_value(dictionary, value):
 '''
 Functions for displaying GUI elements
 '''
+# Create and display GUI elements for the main menu
+# Should include a button for "Create New Game" and a button for "Join Game"
 def show_main_menu():
-    # Create and display GUI elements for the main menu
-    # Should include a button for "Create New Game" and a button for "Join Game"
+    # TODO: Connect GUI here
 
     # Text based version
     print("Welcome to Clue!")
@@ -76,91 +78,124 @@ def show_main_menu():
             return option
         else:
             print("Invalid choice. Please enter 1 or 2.")
+    # End text based version
 
-
+# Create and display GUI elements for the pop-up that appears after you select "Join Game"
+# Should include a space to ender in the game ID of the game you want to join
 def show_create_game_popup():
     global player_name
-    # Create and display GUI elements for the pop-up that appears after you select "Join Game"
-    # Should include a space to ender in the game ID of the game you want to join
+    # TODO: Connect GUI here
 
     # Text based version
     player_name = input("Enter your name: ")
+    # End text based version
 
-
+# Create and display GUI elements for the pop-up that appears after you select "Join Game"
+# Should include a space to ender in the game ID of the game you want to join
 def show_join_game_popup():
     global player_name
-    # Create and display GUI elements for the pop-up that appears after you select "Join Game"
-    # Should include a space to ender in the game ID of the game you want to join
+    # TODO: Connect GUI here
 
     # Text based version
     player_name = input("Enter your name: ")
     game_id = input("Enter the ID of the game you want to join: ")
     print("Connecting...")
     return game_id
+    # End text based version
+
+# Create and display GUI elements for the lobby menu
+# Should include a list of players in the game a "Start" or "Ready Up" button and the game ID
+def show_lobby_menu(lobby_roster):
+    global game_id
+    # TODO: Connect GUI here
+    
+    # Text based version
+    print('\nA NEW PLAYER HAS JOINED THE LOBBY!')
+    print('In Lobby:', lobby_roster)
+    print('Lobby ID:', game_id)
+    # TODO: Add a ready up button/option
+    # End text based version
 
 
-def show_lobby_menu():
-    # Create and display GUI elements for the lobby menu
-    # Should include a list of players in the game and some sort of "Start" or "Ready Up" button
-    # Should display game ID
-    pass
-
-
+# Create and display a generic loading page with a message
 def show_loading_screen(message):
-    # Create and display a generic loading page with a message
+    # TODO: Connect GUI here
     pass
 
 
+# Create and display GUI elements for the game board
+# Should include player/item positions and the players cards
 def show_game_board():
-    # Create and display GUI elements for the game board
-    # Should include player/item positions and the players cards
+    # TODO: Connect GUI here
     pass
 
+# Update the positions of items and characters on the board
+def update_game_board(new_player_info):
+    global player_info
+    # TODO: Connect GUI here
 
-def update_game_board():
-    # Update the positions of items and characters on the board
-    pass
+    if not player_info:
+        print('\nTHE GAME HAS STARTED')
+    else:
+        print('\nPLAYERS HAVE MOVED!')
+    player_info = new_player_info
+    for player in player_info:
+        print((player.get_character().name) + " (" + (player.get_name( )) + ") is in the " + (player.get_position().name))
 
 
+# Create and display GUI elements for the pop-up that appears when it is your turn to move
 def show_your_turn_popup(message):
-    # Create and display GUI elements for the pop-up that appears when it is your turn to move
+    # TODO: Connect GUI here
     pass
 
 
+# Create and display GUI elements for the victory pop-up that appears when you have won
 def show_victory_popup():
-    # Create and display GUI elements for the victory pop-up that appears when you have won
+    # TODO: Connect GUI here
     pass
 
 
+# Create and display GUI elements for the game over pop-up that appears when you have lost
 def show_game_over_popup():
-    # Create and display GUI elements for the game over pop-up that appears when you have lost
+    # TODO: Connect GUI here
+    pass
+
+# Create and display GUI elements for an error message pop-up
+def show_error_popup(player_state):
+    # TODO: Connect GUI here
+
+    # Text based version
+    print("Invalid input, please try again.")
+    # End text based version
+
+
+# Display the players cards
+def show_cards(player_state):
+    cards = (', '.join(card.name for card in player_state.get_cards()))
+    # TODO: Connect GUI here
+
+    # Text based version
+    print("Your cards are: " + cards)
+    # End text based version
+
+
+# Make the action buttons selectable. To be called when it is the players turn
+def enable_controls():
     pass
 
 
-def show_error_popup(player_state):
-    # Create and display GUI elements for an error message pop-up
-    print("Invalid input, please try again.")
+# Make the action buttons unselectable. To be called when it is the end of a players turn
+def disable_controls():
+    pass
 
 
 '''
 Functions for handling user actions
 '''
-def create_new_game():
-    # Call show_loading_screen
-    # Generate a new game request message and call send_message
-    pass
-
-
-def join_game():
-    # Call show_loading_screen
-    # Generate a new join game request message and call send_message
-    pass
-
-
+# Process where the player can move and present their options for moving
 def handle_move(player_state):
     global turn_ended
 
-# Process where the player can move and present their options for moving
     position = player_state.get_position()
     print('You are currently in the ' + str(position.name))
     print('You can move to:')
@@ -228,10 +263,12 @@ def handle_move(player_state):
         print('You cannot make a suggestion from a hallway')
 
 
+# Handle collecting user input for a suggestion
 def handle_suggest(player_state):
     pass
 
 
+# Handle collecting user input for the accusation and sending it to the server
 def handle_accuse(player_state):
     suspect_list = list(clue_game_logic.Suspect)
     suspects = (', '.join(suspect.name for suspect in suspect_list))
@@ -273,32 +310,20 @@ def handle_accuse(player_state):
     send_message(accusation_action_message)
 
 
-def handle_view_cards(player_state):
-    cards = (', '.join(card.name for card in player_state.get_cards()))
-    print("Your cards are: " + cards)
-
-
-def enable_controls():
-    # Make the action buttons selectable. To be called when it is the players turn
-    pass
-
-
-def disable_controls():
-    # Make the action buttons unselectable. To be called when it is the end of a players turn
-    pass
-
-
+# Maps the above functions to a menu number
 action_options = {
     '1': handle_move,
     '2': handle_suggest,
     '3': handle_accuse,
-    '4': handle_view_cards
+    '4': show_cards
 }
 
 
 '''
 Functions for messaging
 '''
+# Send a message to the server
+# TODO: Use a more permanent solution than a hardcoded host and port
 def send_message(message, host='localhost', port=12345):
     # Apply any additional formatting and send message to server
     try:
@@ -315,8 +340,8 @@ def send_message(message, host='localhost', port=12345):
         print("Error occurred while sending message:", e)
 
 
+# Listen for incoming messages and pass to process_message for handling
 def receive_message(host='localhost', port=12346):
-    # Process message received from server and call functions to update the GUI accordingly
     while True:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -339,30 +364,29 @@ def receive_message(host='localhost', port=12346):
             port = port + 1
 
 
+# Connect to the server and listen for messages in a separate thread
+def connect_to_server():
+    receive_message_thread = threading.Thread(target=receive_message)
+    receive_message_thread.daemon = True
+    receive_message_thread.start()
+
+
+# Verify the message type of the received message, and pass to the correct handling function
 def process_message(message):
     global game_id
     global player_info
     global turn_ended
     
     try:
-        # Show players the other players in the lobby, and its ID
+        # Show players the list of other players in the lobby, and the lobby ID
         if (message.message_type == clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE):
             game_id = message.sender_id
-            print('\nA NEW PLAYER HAS JOINED THE LOBBY!')
             lobby_roster = (', '.join(message.game_state_data))
-            print('In Lobby:', lobby_roster)
-            print('Lobby ID:', message.sender_id)
-            # TODO: Add a ready up button/option
+            show_lobby_menu(lobby_roster)
 
         # Update the positions of players on the board
         elif (message.message_type == clue_messaging.Message_Types.GAME_STATE_UPDATE):
-            if not player_info:
-                print('\nTHE GAME HAS STARTED')
-            else:
-                print('\nPLAYERS HAVE MOVED!')
-            player_info = message.game_state_data
-            for player in player_info:
-                print((player.get_character().name) + " (" + (player.get_name( )) + ") is in the " + (player.get_position().name))
+            update_game_board(message.game_state_data)
 
         # Present the player with their possible actions, and process actions taken
         elif (message.message_type == clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION):
@@ -388,26 +412,20 @@ def process_message(message):
 Main
 '''
 def main():
-    # Start receiving messages in a separate thread
-    receive_message_thread = threading.Thread(target=receive_message)
-    receive_message_thread.daemon = True
-    receive_message_thread.start()
-
-    # TODO: This is a temp sleep to ensure initial logging in receive_message_thread doesn't overlap initial prompts
-    #time.sleep(1)
-    
     choice = show_main_menu()
     if choice == '1':
         show_create_game_popup()
         create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.CREATE_GAME, player_name, None, None)
+        connect_to_server()
         send_message(create_game_message)
         # Call function to create a new game
     else:
         game_id = show_join_game_popup()
         create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.JOIN_GAME, player_name, int(game_id), None)
+        connect_to_server()
         send_message(create_game_message)
 
-    # Keeps the program running while waiting for incoming messages
+    # Sleep while waiting for incoming messages
     while True:
         time.sleep(5)
 

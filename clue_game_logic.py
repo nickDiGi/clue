@@ -1,6 +1,9 @@
 import random
 from enum import Enum
 
+# Constants
+HALLWAY_LIMIT = 22
+
 '''
 Cards
 '''
@@ -99,6 +102,7 @@ class Game_Session:
         # TODO: Check below random number to ensure that it does not match the ID of an existing game
         self.id = random.randint(10000, 99999)
         self.turn_number = 1
+        self.winning_cards = []
 
     def add_player(self, name, address):
         self.players.append(Player(name, address, []))
@@ -112,6 +116,9 @@ class Game_Session:
     def get_player_list(self):
         return self.players
     
+    def get_winning_cards(self):
+        return self.winning_cards
+    
     def get_turn_number(self):
         return self.turn_number
     
@@ -123,18 +130,22 @@ class Game_Session:
         print("\nDealing cards to the players")
         suspect_list = list(Suspect)
         weapon_list = list(Weapon)
-        room_list = list(Room)
+        # Get only the room values, not the hallways
+        room_list = [room for room in Room if room.value < 22]
 
         correct_suspect = random.choice(suspect_list)
         print("The suspect to guess is: " + str(correct_suspect) + ", removing them from the pool of cards.")
+        self.winning_cards.append(correct_suspect)
         suspect_list.remove(correct_suspect)
 
         correct_weapon = random.choice(weapon_list)
         print("The weapon to guess is: " + str(correct_weapon) + ", removing it from the pool of cards.")
+        self.winning_cards.append(correct_weapon)
         weapon_list.remove(correct_weapon)
 
         correct_room = random.choice(room_list)
         print("The room to guess is: " + str(correct_room) + ", removing it from the pool of cards.")
+        self.winning_cards.append(correct_room)
         room_list.remove(correct_room)
 
         # Combine the three catagories into one deck, and shuffle it

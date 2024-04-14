@@ -87,47 +87,65 @@ def join_game(message, addr):
                 print("Sent update to " + player.get_name())
                 # Notify the player who's turn it is that it is their turn
                 if player.turn_order_number == 1:
-                    time.sleep(.5) # TODO : Add threading and remove this
                     turn_notification =  clue_messaging.Message(clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION, game.get_id(), board_info, player)
                     send_message(turn_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
                     print("Sent turn notification to " + player.get_name())
                 index = index + 1
-                time.sleep(.5) # TODO : Add threading and remove this
                 
     except Exception as e:
         print("Sorry, we couldn't find that game: ", e)
 
+
+# Sends a message to the player who is next to take their turn
+def send_next_turn_notification(game, players, board_info):
+    index = 0
+    turn_notification_sent = False
+    game_turn_number = game.get_turn_number() + 1
+    if game_turn_number > 3: # TODO: Make this 3 a 6
+        game_turn_number = 1
+    game.set_turn_number(game_turn_number)
+
+    while not turn_notification_sent:
+        for player in players:
+            if player.get_turn_order_number() == game_turn_number:
+                        if player.get_lost_game() == True:
+                            print("Skipping " + player.get_name() + " because they have lost")
+                            game_turn_number = game.get_turn_number() + 1
+                            if game_turn_number > 3: # TODO: Make this 3 a 6
+                                game_turn_number = 1
+                            game.set_turn_number(game_turn_number)
+                        else:
+                            turn_notification =  clue_messaging.Message(clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION, game.get_id(), board_info, player)
+                            send_message(turn_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+                            turn_notification_sent = True
+                            print("Sent turn notification to " + player.get_name())
+            index = index + 1
+
 # Updates an existing game_logic object (ongoing game) with new player info from the message.
-def update_game_state(message):
+def update_game_state(message, next_turn):
     global ongoing_games
 
     print('\nGAME STATE UPDATE RECEIVED:')
     print('Game Session:', message.sender_id)
     print('Player Data:', message.player_state_data)
     game = ongoing_games[message.sender_id]
-    game_turn_number = game.get_turn_number() + 1
-    if game_turn_number > 3: # TODO: Make this 3 a 6
-        game_turn_number = 1
-    game.set_turn_number(game_turn_number)
     players = game.get_players()
 
     # Update the data for the player who sent the update
     index = 0
     while index < len(players):
         player = players[index]
-        print("Player named " + player.get_name() + " is not player " + message.player_state_data.get_name())
         if player.get_name() == message.player_state_data.get_name():
-            print("Just kidding! Updating the player data!")
             players[index] = message.player_state_data
             break # TODO Maybe get rid of this break
         index = index + 1
 
     board_info = []
     for player in players:
-        #board_info = board_info + ((player.get_name() + "(" + str(player.get_character()) + ") is currently in the " + str(player.get_position()) + "\n"))
         stripped_player = clue_game_logic.Player(player.get_name(), None, [])
         stripped_player.set_character(player.get_character())
         stripped_player.set_position(player.get_position())
+        stripped_player.set_lost_game(player.get_lost_game())
         board_info.append(stripped_player)
 
     for player in players:
@@ -139,15 +157,82 @@ def update_game_state(message):
         send_message(game_state_update, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
         print("Sent update to " + player.get_name())
         index = index + 1
-        time.sleep(.5)
+
+    if next_turn:
+        send_next_turn_notification(game, players, board_info)
+
+
+# Handles server-side logic for when a player makes an suggestion.
+def handle_suggestion_action(message):
+    global ongoing_games
+
+    print('\nSUGGESTION ACTION MESSAGE RECEIVED:')
+    print('Game Session:', message.sender_id)
+    print('Player Data:', message.player_state_data)
+    print('Their Suggestion: ' + str(message.game_state_data))
+
+    game = ongoing_games[message.sender_id]
+    game.set_suggesting_player(message.player_state_data)
+    game.set_active_suggestion_cards(message.game_state_data)
+    game.set_suggestion_turn_number(game.get_turn_number() + 1)
+    if game.get_suggestion_turn_number() > 3: # TODO: Make this 3 a 6
+        game.set_suggestion_turn_number(1)
+    players = game.get_players()
+
+    update_game_state(message, False)
+    suggestion_turn_number = game.get_suggestion_turn_number()
 
     index = 0
     for player in players:
-        if player.turn_order_number == game_turn_number:
-                    turn_notification =  clue_messaging.Message(clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION, game.get_id(), board_info, player)
-                    send_message(turn_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
-                    print("Sent turn notification to " + player.get_name())
+        if player.get_turn_order_number() == suggestion_turn_number:
+            disprove_action_notification =  clue_messaging.Message(clue_messaging.Message_Types.DISPROVE_SUGGESTION_ACTION, game.get_suggesting_player(), message.game_state_data, player)
+            send_message(disprove_action_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+            print("Sent disprove suggestion action to " + player.get_name())
         index = index + 1
+
+
+def handle_disprove_action(message):
+    global ongoing_games
+    game = ongoing_games[message.sender_id]
+    players = game.get_players()
+    showing_player = message.player_state_data
+
+    print('\nDISPROVE ACTION MESSAGE RECEIVED:')
+    print('Game Session:', message.sender_id)
+    if not message.game_state_data:
+        game.set_suggestion_turn_number(game.get_suggestion_turn_number() + 1)
+        if game.get_suggestion_turn_number() > 3: # TODO: Make this 3 a 6
+            game.set_suggestion_turn_number(1)
+
+        index = 0
+        for player in players:
+            if player.get_turn_order_number() == game.get_suggestion_turn_number():
+                disprove_action_notification =  clue_messaging.Message(clue_messaging.Message_Types.DISPROVE_SUGGESTION_ACTION, game.get_suggesting_player(), game.get_active_suggestion_cards(), player)
+                send_message(disprove_action_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+                print("Sent disprove suggestion action to " + player.get_name())
+            index = index + 1
+    else:
+        print('Shown Card:', message.game_state_data)
+        index = 0
+        for player in players:
+            if player.get_name() == game.get_suggesting_player().get_name():
+                shown_card_notification =  clue_messaging.Message(clue_messaging.Message_Types.SHOW_CARD_ACTION, game.get_id(), message.game_state_data, showing_player)
+                send_message(shown_card_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+                print("Sent shown card notification to " + player.get_name())
+            else:
+                shown_card_notification =  clue_messaging.Message(clue_messaging.Message_Types.SHOW_CARD_ACTION, game.get_suggesting_player(), game.get_active_suggestion_cards(), showing_player)
+                send_message(shown_card_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+                print("Sent suggestion disproved notification to " + player.get_name())
+            index = index + 1
+
+        board_info = []
+        for player in players:
+            stripped_player = clue_game_logic.Player(player.get_name(), None, [])
+            stripped_player.set_character(player.get_character())
+            stripped_player.set_position(player.get_position())
+            stripped_player.set_lost_game(player.get_lost_game())
+            board_info.append(stripped_player)
+        send_next_turn_notification(game, players, board_info)
 
 # Handles server-side logic for when a player makes an accusation.
 def handle_accusation_action(message):
@@ -156,14 +241,29 @@ def handle_accusation_action(message):
     print('\nACCUSATION ACTION MESSAGE RECEIVED:')
     print('Game Session:', message.sender_id)
     print('Player Data:', message.player_state_data)
-    print('Their Guess: ' + str(message.game_state_data))
+    print('Their Accusation: ' + str(message.game_state_data))
 
     game = ongoing_games[message.sender_id]
     winning_cards = game.get_winning_cards()
     if message.game_state_data == winning_cards:
-        print("They won!")
+        print("*** They won!")
+        index = 0
+        players = game.get_players()
+        for player in players:
+            if player.get_name() == message.player_state_data.get_name():
+                you_won_notification = clue_messaging.Message(clue_messaging.Message_Types.YOU_WON_NOTIFICATION, game.get_id(), None, player.get_name())
+                send_message(you_won_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+            else:
+                game_over_notification = clue_messaging.Message(clue_messaging.Message_Types.GAME_OVER_NOTIFICATION, game.get_id(), None, message.player_state_data.get_name())
+                send_message(game_over_notification, player.get_address()[0], (12346+index)) # TODO: Fix port weirdness
+            index = index + 1
+        del ongoing_games[message.sender_id]
+        print("Game removed from ongoing games. \n\nOngoing games: " + str(ongoing_games))
     else:
-        print("They lost!")
+        print("*** They lost!")
+        # Set the losing player's lost_game value to true
+        message.player_state_data.set_lost_game(True)
+        update_game_state(message, True)
 
 
 '''
@@ -173,6 +273,7 @@ Functions for messaging
 def send_message(message, host, port):
     # Apply any additional formatting and send message to client
     try:
+        time.sleep(.3) # TODO : Add threading and remove this
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
 
@@ -246,7 +347,13 @@ def process_message(message, addr):
         join_game(message, addr)
 
     elif (message.message_type == clue_messaging.Message_Types.GAME_STATE_UPDATE):
-        update_game_state(message)
+        update_game_state(message, True)
+
+    elif (message.message_type == clue_messaging.Message_Types.SUGGESTION_ACTION):
+        handle_suggestion_action(message)
+
+    elif (message.message_type == clue_messaging.Message_Types.DISPROVE_SUGGESTION_ACTION):
+        handle_disprove_action(message)
 
     elif (message.message_type == clue_messaging.Message_Types.ACCUSATION_ACTION):
         handle_accusation_action(message)

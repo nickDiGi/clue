@@ -1,9 +1,12 @@
 import pygame
-from constants import *
-from button import Button
-from character import Character
+import requests
+import json
+from prev_frontend.constants import *
+from prev_frontend.button import Button
+from prev_frontend.character import Character
 
 BACKEND_URL = "http://localhost:8000/select_character"
+# BACKEND_URL = "http://localhost:5000/select_character"
 
 # initialize pygame
 pygame.init()
@@ -67,17 +70,21 @@ def draw_characters():
         display_x += 225
         if char.clicked():
             print(file_names[i].replace("_", " "))
-            send_character_to_backend(selected character)
+            # send_character_to_backend(selected character)
+            send_character_to_backend(file_names[i].replace("_", " "))
+
 
 def send_character_to_backend(character):
+    # paylod = {"Character Name": character}
     try:
-        response = requests.post(BACKEND_URL, json = {"character": character})
+        response = requests.post(f"{BACKEND_URL}/post", json={"character": character})
+        # response = requests.post(f"{BACKEND_URL}/post", data=paylod)
         if response.status_code == 200:
-            print("Thank you for selecting character!")
+            print(f"Thank you for selecting character {character}!")
         else:
             print("Failed to select character. Please try again.")
     except Exception as e:
-        print ("An error has occured.", str(e)) 
+        print("An error has occured.", str(e))
 
 
 # run pygame
@@ -90,6 +97,9 @@ def running():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            # if event.type == pygame.MOUSEBUTTONDOWN:
+            #     if not main_menu:
+            #         draw_characters()
         if main_menu:
             main_menu = draw_menu()
         else:

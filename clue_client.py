@@ -10,6 +10,7 @@ import clue_game_logic
 player_name = ""
 game_id = 0
 turn_ended = False
+moved_this_turn = False
 player_info = [] # An array that will contain the players in the game and their data
 
 # Constants
@@ -134,6 +135,7 @@ def update_game_board(new_player_info):
     global player_info
     # TODO: Connect GUI here
 
+    # Text based version
     if not player_info:
         print('\nTHE GAME HAS STARTED')
     else:
@@ -143,13 +145,24 @@ def update_game_board(new_player_info):
         print((player.get_character().name) + " (" + (player.get_name()) + ") is in the " + (player.get_position().name))
         if player.get_lost_game():
             print("*** " + (player.get_character().name) + " (" + (player.get_name()) + ") made an incorrect accusation. They have lost the game and cannot move.")
+    # End text based version
 
 
 # Create and display GUI elements for the pop-up that appears when it is your turn to move
-def show_your_turn_popup(message):
+def show_your_turn_popup(player_state):
     # TODO: Connect GUI here
-    pass
 
+    # Text based version
+    while not turn_ended:
+        print('\nITS YOUR TURN!')
+        print('1. Move')
+        print('2. Suggest')
+        print('3. Accuse')
+        print('4. View Cards')
+        print('5. End Turn')
+        action = input("Enter the number of the action you would like to take: ")
+        action_options.get(action, show_error_popup)(player_state)
+    # End text based version
 
 # Create and display GUI elements for the victory pop-up that appears when you have won
 def show_victory_popup():
@@ -197,83 +210,67 @@ Functions for handling user actions
 # Process where the player can move and present their options for moving
 def handle_move(player_state):
     global turn_ended
+    global moved_this_turn
 
-    position = player_state.get_position()
-    print('You are currently in the ' + str(position.name))
-    print('You can move to:')
-    x = room_coordinates[position][0]
-    y = room_coordinates[position][1]
-
-    # TODO: Add secret passages
-    choices = {}
-    index = 1
-    adjacent_cord = (x-1,y)
-    room_name = get_key_by_value(room_coordinates, adjacent_cord)
-    # Get the possible rooms the player can move to
-    if(room_name is not None):
-        print(str(index) + " : " + room_name.name)
-        choices[index] = room_name
-        index = index + 1
-    adjacent_cord = (x+1,y)
-    room_name = get_key_by_value(room_coordinates, adjacent_cord)
-    if(room_name is not None):
-        print(str(index) + " : " + room_name.name)
-        choices[index] = room_name
-        index = index + 1
-    adjacent_cord = (x,y-1)
-    room_name = get_key_by_value(room_coordinates, adjacent_cord)
-    if(room_name is not None):
-        print(str(index) + " : " + room_name.name)
-        choices[index] = room_name
-        index = index + 1
-    adjacent_cord = (x,y+1)
-    room_name = get_key_by_value(room_coordinates, adjacent_cord)
-    if(room_name is not None):
-        print(str(index) + " : " + room_name.name)
-        choices[index] = room_name
-        index = index + 1
-
-    # Get the players choice of move
-    new_position = None
-    while new_position is None:
-        given_position = input("Enter the number of the room where would you like to move: ")
-        print(choices[int(given_position)])
-        if choices[int(given_position)] in clue_game_logic.Room:
-            new_position = choices[int(given_position)]
-            for player in player_info:
-                # Check if the room is a hallway, and if another player is blocking it
-                if player.get_position() == new_position and new_position.value >= HALLWAY_LIMIT:
-                    print("That position is already occupied! try again.")
-                    new_position = None
-                    break
-        else:
-            print("That is not a valid room, try again.")
-    # TODO: Give option to suggest instead of ending the turn
-    turn_ended = True
-
-    player_state.set_position(new_position)
-    create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.GAME_STATE_UPDATE, game_id, None, player_state)
-    send_message(create_game_message)
-
-    # If the player is in a room (not a hallway), give them the option to suggest
-    if new_position.value < HALLWAY_LIMIT:
-        # print('Make a suggestion:')
-        # TODO: List players and weapons
-        # TODO: Let the player select a player and weapon to suggest
-        pass
+    if moved_this_turn:
+        print('You have already moved this turn.')
     else:
-        print('You cannot make a suggestion from a hallway')
+        position = player_state.get_position()
+        print('You are currently in the ' + str(position.name))
+        print('You can move to:')
+        x = room_coordinates[position][0]
+        y = room_coordinates[position][1]
+
+        # TODO: Add secret passages
+        choices = {}
+        index = 1
+        adjacent_cord = (x-1,y)
+        room_name = get_key_by_value(room_coordinates, adjacent_cord)
+        # Get the possible rooms the player can move to
+        if(room_name is not None):
+            print(str(index) + " : " + room_name.name)
+            choices[index] = room_name
+            index = index + 1
+        adjacent_cord = (x+1,y)
+        room_name = get_key_by_value(room_coordinates, adjacent_cord)
+        if(room_name is not None):
+            print(str(index) + " : " + room_name.name)
+            choices[index] = room_name
+            index = index + 1
+        adjacent_cord = (x,y-1)
+        room_name = get_key_by_value(room_coordinates, adjacent_cord)
+        if(room_name is not None):
+            print(str(index) + " : " + room_name.name)
+            choices[index] = room_name
+            index = index + 1
+        adjacent_cord = (x,y+1)
+        room_name = get_key_by_value(room_coordinates, adjacent_cord)
+        if(room_name is not None):
+            print(str(index) + " : " + room_name.name)
+            choices[index] = room_name
+            index = index + 1
+
+        # Get the players choice of move
+        new_position = None
+        while new_position is None:
+            given_position = input("Enter the number of the room where would you like to move: ")
+            if choices[int(given_position)] in clue_game_logic.Room:
+                new_position = choices[int(given_position)]
+                for player in player_info:
+                    # Check if the room is a hallway, and if another player is blocking it
+                    if player.get_position() == new_position and new_position.value >= HALLWAY_LIMIT:
+                        print("That position is already occupied! try again.")
+                        new_position = None
+                        break
+            else:
+                print("That is not a valid room, try again.")
+        moved_this_turn = True
+
+        player_state.set_position(new_position)
 
 
-# Handle collecting user input for a suggestion
-def handle_suggest(player_state):
-    pass
-
-
-# Handle collecting user input for the accusation and sending it to the server
-def handle_accuse(player_state):
-    global turn_ended
-
+# Let the player choose a suspect, weapon, and room
+def choose_cards(choose_room):
     suspect_list = list(clue_game_logic.Suspect)
     suspects = (', '.join(suspect.name for suspect in suspect_list))
     weapon_list = list(clue_game_logic.Weapon)
@@ -288,7 +285,7 @@ def handle_accuse(player_state):
         chosen_suspect = chosen_suspect.upper()
         if chosen_suspect not in [suspect.name for suspect in suspect_list]:
             chosen_suspect = ""
-            print("Invalid suspect, try again")
+            print("Invalid suspect, try again.")
 
     chosen_weapon = ""
     while not chosen_weapon:
@@ -297,22 +294,100 @@ def handle_accuse(player_state):
         chosen_weapon = chosen_weapon.upper()
         if chosen_weapon not in [weapon.name for weapon in weapon_list]:
             chosen_weapon = ""
-            print("Invalid weapon, try again")
+            print("Invalid weapon, try again.")
 
-    chosen_room = ""
-    while not chosen_room:
-        print("The possible rooms are: " + rooms)
-        chosen_room = input("Enter the name of the room it was done in: ")
-        chosen_room = chosen_room.upper()
-        if chosen_room not in [room.name for room in room_list]:
-            chosen_room = ""
-            print("Invalid room, try again")
+    if choose_room:
+        chosen_room = ""
+        while not chosen_room:
+            print("The possible rooms are: " + rooms)
+            chosen_room = input("Enter the name of the room it was done in: ")
+            chosen_room = chosen_room.upper()
+            if chosen_room not in [room.name for room in room_list]:
+                chosen_room = ""
+                print("Invalid room, try again.")
+        chosen_cards = [suspect_mapping.get(chosen_suspect), weapon_mapping.get(chosen_weapon), room_mapping.get(chosen_room)]
+    else:
+        chosen_cards = [suspect_mapping.get(chosen_suspect), weapon_mapping.get(chosen_weapon)]
 
-    chosen_cards = [suspect_mapping.get(chosen_suspect), weapon_mapping.get(chosen_weapon), room_mapping.get(chosen_room)]
+    return chosen_cards
+
+
+# Handle collecting user input for a suggestion
+def handle_suggest(player_state):
+    global turn_ended
+
+    # If the player is in a room (not a hallway), give them the option to suggest
+    if player_state.get_position().value >= HALLWAY_LIMIT:
+        print('You cannot make a suggestion from a hallway.')
+    else:
+        chosen_cards = choose_cards(False)
+        chosen_cards.append(player_state.get_position())
+        turn_ended = True
+        suggest_action_message =  clue_messaging.Message(clue_messaging.Message_Types.SUGGESTION_ACTION, game_id, chosen_cards, player_state)
+        send_message(suggest_action_message)
+
+
+# Handle collecting user input for the accusation and sending it to the server
+def handle_disprove(active_suggestion_cards, suggesting_player, player_state):
+
+    # If you are asked to disprove your own suggestion, that means no one else could
+    if(suggesting_player.get_name() == player_state.get_name()):
+        print("None of the other players could disprove your suggestion!")
+        # Send a game update with no new moves to signal the server to go to the next player
+        print("Sending a do-nothing game update with: " + player_state.get_position().name)
+        game_state_update =  clue_messaging.Message(clue_messaging.Message_Types.GAME_STATE_UPDATE, game_id, None, player_state)
+        send_message(game_state_update)
+    else:
+        print("\nA SUGGESTION WAS MADE BY " + suggesting_player.get_name().upper() + ": " + str(active_suggestion_cards))
+        # Convert arrays to sets to remove duplicate elements
+        player_cards = set(player_state.get_cards())
+        suggestion_cards = set(active_suggestion_cards)
+        
+        # Find the intersection of the sets
+        common_items = list(player_cards.intersection(suggestion_cards))
+        if not common_items:
+            print("You do not have the cards to disprove it, moved to the next player.")
+            disprove_suggestion_message =  clue_messaging.Message(clue_messaging.Message_Types.DISPROVE_SUGGESTION_ACTION, game_id, None, player_state)
+            send_message(disprove_suggestion_message)
+        else:
+            cards = (', '.join(card.name for card in common_items))
+            chosen_card = ""
+            while not chosen_card:
+                print("You can disprove the suggestion using you card(s): " + cards)
+                chosen_card = input("Enter the name of the card you want to show: ")
+                chosen_card = chosen_card.upper()
+                if chosen_card not in [card.name for card in active_suggestion_cards]:
+                    chosen_card = ""
+                    print("Invalid card, try again.")
+                else:
+                    disprove_suggestion_message =  clue_messaging.Message(clue_messaging.Message_Types.DISPROVE_SUGGESTION_ACTION, game_id, chosen_card, player_state)
+                    send_message(disprove_suggestion_message)
+
+
+# Handle collecting user input for the accusation and sending it to the server
+def handle_show_card(sender, card, player_state):
+    if type(card) == str:
+        print(player_state.get_name() + " showed you their card " + card + " to disprove your suggestion.")
+    else:
+        print("\n" + sender.get_name() + " suggested the crime was " + str(card) + ", but it was disproved by " + player_state.get_name())
+
+
+# Handle collecting user input for the accusation and sending it to the server
+def handle_accuse(player_state):
+    global turn_ended
+
+    chosen_cards = choose_cards(True)
     turn_ended = True
-
     accusation_action_message =  clue_messaging.Message(clue_messaging.Message_Types.ACCUSATION_ACTION, game_id, chosen_cards, player_state)
     send_message(accusation_action_message)
+
+
+def end_turn(player_state):
+    global turn_ended
+
+    turn_ended = True
+    game_state_update =  clue_messaging.Message(clue_messaging.Message_Types.GAME_STATE_UPDATE, game_id, None, player_state)
+    send_message(game_state_update)
 
 
 # Maps the above functions to a menu number
@@ -320,13 +395,21 @@ action_options = {
     '1': handle_move,
     '2': handle_suggest,
     '3': handle_accuse,
-    '4': show_cards
+    '4': show_cards,
+    '5': end_turn
 }
 
 
 '''
 Functions for messaging
 '''
+# Connect to the server and listen for messages in a separate thread
+def connect_to_server():
+    receive_message_thread = threading.Thread(target=receive_message)
+    receive_message_thread.daemon = True
+    receive_message_thread.start()
+
+
 # Send a message to the server
 # TODO: Use a more permanent solution than a hardcoded host and port
 def send_message(message, host='localhost', port=12345):
@@ -369,18 +452,12 @@ def receive_message(host='localhost', port=12346):
             port = port + 1
 
 
-# Connect to the server and listen for messages in a separate thread
-def connect_to_server():
-    receive_message_thread = threading.Thread(target=receive_message)
-    receive_message_thread.daemon = True
-    receive_message_thread.start()
-
-
 # Verify the message type of the received message, and pass to the correct handling function
 def process_message(message):
     global game_id
     global player_info
     global turn_ended
+    global moved_this_turn
     
     try:
         # Show players the list of other players in the lobby, and the lobby ID
@@ -396,15 +473,16 @@ def process_message(message):
         # Present the player with their possible actions, and process actions taken
         elif (message.message_type == clue_messaging.Message_Types.YOUR_TURN_NOTIFICATION):
             turn_ended = False
-            while not turn_ended:
-                print('\nITS YOUR TURN!')
-                print('1. Move')
-                print('2. Suggest')
-                print('3. Accuse')
-                print('4. View Cards')
-                action = input("Enter the number of the action you would like to take: ")
-                player_state = message.player_state_data
-                action_options.get(action, show_error_popup)(player_state)
+            moved_this_turn = False
+            show_your_turn_popup(message.player_state_data)
+
+        # Present the player with their options for disproving an active suggestion
+        elif (message.message_type == clue_messaging.Message_Types.DISPROVE_SUGGESTION_ACTION):
+            handle_disprove(message.game_state_data, message.sender_id, message.player_state_data)
+
+        # Show the player the card presented by the other player
+        elif (message.message_type == clue_messaging.Message_Types.SHOW_CARD_ACTION):
+            handle_show_card(message.sender_id, message.game_state_data, message.player_state_data)
 
         elif (message.message_type == clue_messaging.Message_Types.GAME_OVER_NOTIFICATION):
             print('\n##############################')
@@ -417,7 +495,7 @@ def process_message(message):
             print('#########################')
 
         else:
-            print('WARN: Bad message type received')
+            print('WARN: Bad message type received.')
             
     except Exception as e:
         print("Error occurred while processing message:", e)

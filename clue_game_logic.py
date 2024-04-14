@@ -109,6 +109,9 @@ class Game_Session:
         # TODO: Check below random number to ensure that it does not match the ID of an existing game
         self.id = random.randint(10000, 99999)
         self.turn_number = 1
+        self.suggestion_turn_number = 1
+        self.active_suggestion_cards = []
+        self.suggesting_player = None
         self.winning_cards = []
 
     def add_player(self, name, address):
@@ -131,6 +134,24 @@ class Game_Session:
     
     def set_turn_number(self, turn_number):
         self.turn_number = turn_number
+
+    def get_suggestion_turn_number(self):
+        return self.suggestion_turn_number
+    
+    def set_suggestion_turn_number(self, suggestion_turn_number):
+        self.suggestion_turn_number = suggestion_turn_number
+
+    def get_active_suggestion_cards(self):
+        return self.active_suggestion_cards
+    
+    def set_active_suggestion_cards(self, active_suggestion_cards):
+        self.active_suggestion_cards = active_suggestion_cards
+
+    def get_suggesting_player(self):
+        return self.suggesting_player
+    
+    def set_suggesting_player(self, suggesting_player):
+        self.suggesting_player = suggesting_player
     
     def deal_cards(self):
         # Randomly select the cards to guess, and deal out the remaining cards

@@ -48,4 +48,13 @@ def main():
         clock.tick(60)
 
 
-main()
+# main()
+
+game_screen = Game(screen, font)
+
+
+def work_on_game_screen():
+    game_screen.menu()
+
+
+work_on_game_screen()

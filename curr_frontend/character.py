@@ -13,7 +13,7 @@ class Character:
         self.height = 50
 
     def display(self, x_inc=0, y_inc=0):
-        x_value = 0 + x_inc
-        y_value = 0 + y_inc
+        x_value = 150 + x_inc
+        y_value = 150 + y_inc
         char_rect = pygame.Rect(x_value, y_value, self.width, self.height)
         pygame.draw.rect(self.screen, (155, 155, 155), char_rect)

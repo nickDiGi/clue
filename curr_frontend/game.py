@@ -23,10 +23,26 @@ class Game:
 
     def game_board(self):
         block_size = 50
-        for x in range(0, 350, block_size):
-            for y in range(0, 350, block_size):
+        y_counter = 0
+        for x in range(150, 700, block_size):
+            x_counter = 0
+            for y in range(150, 700, block_size):
+                if x == 300 or x == 500:
+                    if x_counter % 4 == 1:
+                        color = (255, 255, 255)
+                    else:
+                        color = (0, 0, 0)
+                elif y == 300 or y == 500:
+                    if y_counter % 4 == 1:
+                        color = (255, 255, 255)
+                    else:
+                        color = (0, 0, 0)
+                else:
+                    color = (255, 255, 255)
                 rect = pygame.Rect(x, y, block_size, block_size)
-                pygame.draw.rect(self.screen, (255, 255, 255), rect, 1)
+                pygame.draw.rect(self.screen, color, rect, 1)
+                x_counter += 1
+            y_counter += 1
 
     def menu(self):
         x_inc, y_inc = 0, 0

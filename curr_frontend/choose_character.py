@@ -2,6 +2,7 @@ import pygame, sys, os
 from button import Button
 from game import Game
 from constants import *
+from character_button import CharacterButton
 
 clock = pygame.time.Clock()
 choose_character_title_font = pygame.font.SysFont(None, 36)
@@ -20,6 +21,14 @@ class ChooseCharacter:
         for file in directory:
             character_list.append(file.replace("_", " ").replace(".png", ""))
         return character_list[1:]
+
+    def character_files(self):
+        character_files = []
+        path = "./assets"
+        directory = os.listdir(path)
+        for file in directory:
+            character_files.append(file)
+        return character_files[1:]
 
     def display_characters(self):
         x = (WIDTH / 3) - 80
@@ -46,6 +55,45 @@ class ChooseCharacter:
             x = (WIDTH / 3) - 80
             y += 200
 
+    def select_character_img(self):
+        x = (WIDTH / 3) - 90
+        y = HEIGHT / 5
+        mx, my = pygame.mouse.get_pos()
+        clue_characters = [
+            self.character_files()[:3],
+            self.character_files()[3:],
+        ]
+        for i in range(len(clue_characters)):
+            for j in range(len(clue_characters[i])):
+                CharacterButton(
+                    self.screen, x, y, 160, 280, "", f"./assets/{clue_characters[i][j]}"
+                ).rect()
+                if (
+                    CharacterButton(
+                        self.screen,
+                        x,
+                        y,
+                        160,
+                        280,
+                        "",
+                        f"./assets/{clue_characters[i][j]}",
+                    )
+                    .rect()
+                    .collidepoint((mx, my))
+                ):
+                    self.character_hover = (
+                        clue_characters[i][j].replace("_", " ").replace(".png", "")
+                    )
+                CharacterButton(
+                    self.screen, x, y, 160, 280, "", f"./assets/{clue_characters[i][j]}"
+                ).rect_bg()
+                CharacterButton(
+                    self.screen, x, y, 160, 280, "", f"./assets/{clue_characters[i][j]}"
+                ).rect_img()
+                x += 250
+            x = (WIDTH / 3) - 90
+            y += 350
+
     def character_clicked(self):
         return self.character_hover
 
@@ -57,10 +105,8 @@ class ChooseCharacter:
                 "Choose Character", True, (255, 255, 255)
             )
             self.screen.blit(text_srf, ((WIDTH / 2) - (text_srf.get_width() / 2), 50))
-            self.display_characters()
-            # self.character_clicked()
-            # if self.click:
-            # print(self.character_clicked())
+            # self.display_characters()
+            self.select_character_img()
             self.click = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

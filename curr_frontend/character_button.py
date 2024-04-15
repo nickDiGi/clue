@@ -1,4 +1,5 @@
 import pygame
+from constants import *
 
 pygame.init()
 
@@ -20,4 +21,6 @@ class CharacterButton:
         pygame.draw.rect(self.screen, (155, 155, 155), self.rect())
 
     def rect_img(self):
-        pass
+        img = pygame.image.load(self.filename).convert()
+        img_scaled = pygame.transform.scale(img, (self.width, self.height))
+        self.screen.blit(img_scaled, (self.x, self.y))

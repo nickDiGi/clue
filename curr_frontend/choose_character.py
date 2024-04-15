@@ -1,8 +1,10 @@
-import pygame, sys
+import pygame, sys, os
 from button import Button
 from game import Game
+from constants import *
 
 clock = pygame.time.Clock()
+choose_character_title_font = pygame.font.SysFont(None, 36)
 
 
 class ChooseCharacter:
@@ -11,13 +13,21 @@ class ChooseCharacter:
         self.font = font
         self.character_hover = ""
 
+    def character_names(self):
+        character_list = []
+        path = "./assets"
+        directory = os.listdir(path)
+        for file in directory:
+            character_list.append(file.replace("_", " ").replace(".png", ""))
+        return character_list[1:]
+
     def display_characters(self):
-        x = 50
-        y = 100
+        x = (WIDTH / 3) - 80
+        y = HEIGHT / 4
         num = 1
         clue_characters = [
-            ["Prof. Plum", "Miss Scarlett", "Mr. Green"],
-            ["Mrs. White", "Mrs. Peacock", "Colonel Mustard"],
+            self.character_names()[:3],
+            self.character_names()[3:],
         ]
         mx, my = pygame.mouse.get_pos()
         for i in range(len(clue_characters)):
@@ -31,10 +41,10 @@ class ChooseCharacter:
                     self.character_hover = clue_characters[i][j]
                 Button(self.screen, x, y, f"{clue_characters[i][j]}").rect_bg()
                 Button(self.screen, x, y, f"{clue_characters[i][j]}").rect_text()
-                x += 200
+                x += 250
                 num += 1
-            x = 50
-            y += 100
+            x = (WIDTH / 3) - 80
+            y += 200
 
     def character_clicked(self):
         return self.character_hover
@@ -43,8 +53,10 @@ class ChooseCharacter:
         running = True
         while running:
             self.screen.fill((0, 0, 0))
-            text_srf = self.font.render("Choose Character", True, (255, 255, 255))
-            self.screen.blit(text_srf, (50, 50))
+            text_srf = choose_character_title_font.render(
+                "Choose Character", True, (255, 255, 255)
+            )
+            self.screen.blit(text_srf, ((WIDTH / 2) - (text_srf.get_width() / 2), 50))
             self.display_characters()
             # self.character_clicked()
             # if self.click:

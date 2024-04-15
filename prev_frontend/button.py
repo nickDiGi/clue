@@ -1,5 +1,7 @@
 import pygame
-from prev_frontend.constants import *
+from constants import *
+
+# from prev_frontend.constants import *
 
 pygame.font.init()
 

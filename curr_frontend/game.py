@@ -22,7 +22,11 @@ class Game:
         self.board_pos = [0, 0]
 
     def game_board(self):
-        pass
+        block_size = 50
+        for x in range(0, 350, block_size):
+            for y in range(0, 350, block_size):
+                rect = pygame.Rect(x, y, block_size, block_size)
+                pygame.draw.rect(self.screen, (255, 255, 255), rect, 1)
 
     def menu(self):
         x_inc, y_inc = 0, 0
@@ -32,6 +36,7 @@ class Game:
             self.screen.fill((0, 0, 0))
             text_srf = self.font.render("Game", True, (255, 255, 255))
             self.screen.blit(text_srf, (50, 50))
+            self.game_board()
             player.display(x_inc=x_inc, y_inc=y_inc)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -49,16 +54,16 @@ class Game:
                     if event.key == pygame.K_LEFT:
                         self.clicked_left = True
                 if event.type == pygame.KEYUP and self.clicked_up == True:
-                    y_inc -= 30
+                    y_inc -= 50
                     self.clicked_up = False
                 elif event.type == pygame.KEYDOWN and self.clicked_down == True:
-                    y_inc += 30
+                    y_inc += 50
                     self.clicked_down = False
                 elif event.type == pygame.KEYDOWN and self.clicked_right == True:
-                    x_inc += 30
+                    x_inc += 50
                     self.clicked_right = False
                 elif event.type == pygame.KEYDOWN and self.clicked_left == True:
-                    x_inc -= 30
+                    x_inc -= 50
                     self.clicked_left = False
             pygame.display.update()
             clock.tick(60)

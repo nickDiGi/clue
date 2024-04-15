@@ -11,8 +11,8 @@ class Button:
         self.x = x
         self.y = y
         self.text = text
-        self.width = 135
-        self.height = 50
+        self.width = 150
+        self.height = 70
 
     def rect(self):
         return pygame.Rect(self.x, self.y, self.width, self.height)

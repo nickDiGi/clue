@@ -2,46 +2,48 @@ import pygame, sys
 from game import Game
 from choose_character import ChooseCharacter
 from button import Button
+from constants import *
 
 clock = pygame.time.Clock()
+join_title_font = pygame.font.SysFont(None, 36)
+label_font = pygame.font.SysFont(None, 28)
 
 
 class JoinGame:
     def __init__(self, screen, font):
         self.screen = screen
         self.font = font
-        self.name = "Join Game"
         self.gamename_text = ""
         self.username_text = ""
         self.input_clicked_color = (215, 215, 215)
         self.input_not_clicked_color = (155, 155, 155)
         self.gamename_input_color = self.input_not_clicked_color
         self.username_input_color = self.input_not_clicked_color
-        self.submit_btn = Button(self.screen, 50, 180, "Submit")
+        self.submit_btn = Button(self.screen, (WIDTH / 2) - 75, 220, "Submit")
 
     def gamename(self):
-        game_name_srf = self.font.render("Enter Gamename:", True, (255, 255, 255))
-        self.screen.blit(game_name_srf, (50, 100))
+        game_name_srf = label_font.render("Enter Gamename:", True, (255, 255, 255))
+        self.screen.blit(game_name_srf, ((WIDTH / 2) - 200, 130))
 
     def gamename_input_rect(self):
-        input_rect = pygame.Rect(205, 100, 200, 25)
+        input_rect = pygame.Rect((WIDTH / 2), 130, 200, 25)
         return pygame.draw.rect(self.screen, self.gamename_input_color, input_rect, 2)
 
     def gamename_input(self):
-        text_surface = self.font.render(self.gamename_text, True, (255, 255, 255))
-        self.screen.blit(text_surface, (205 + 5, 100 + 3))
+        text_surface = label_font.render(self.gamename_text, True, (255, 255, 255))
+        self.screen.blit(text_surface, ((WIDTH / 2) + 5, 130 + 3))
 
     def username(self):
-        username_srf = self.font.render("Enter Username:", True, (255, 255, 255))
-        self.screen.blit(username_srf, (50, 130))
+        username_srf = label_font.render("Enter Username:", True, (255, 255, 255))
+        self.screen.blit(username_srf, ((WIDTH / 2) - 200, 160))
 
     def username_input_rect(self):
-        input_rect = pygame.Rect(205, 130, 200, 25)
+        input_rect = pygame.Rect((WIDTH / 2), 160, 200, 25)
         return pygame.draw.rect(self.screen, self.username_input_color, input_rect, 2)
 
     def username_input(self):
-        text_surface = self.font.render(self.username_text, True, (255, 255, 255))
-        self.screen.blit(text_surface, (205 + 5, 130 + 3))
+        text_surface = label_font.render(self.username_text, True, (255, 255, 255))
+        self.screen.blit(text_surface, ((WIDTH / 2) + 5, 160 + 3))
 
     def input_information(self):
         return [self.gamename_text, self.username_text]
@@ -56,8 +58,8 @@ class JoinGame:
         while running:
             self.screen.fill((0, 0, 0))
             mx, my = pygame.mouse.get_pos()
-            text_srf = self.font.render(self.name, True, (255, 255, 255))
-            self.screen.blit(text_srf, (50, 50))
+            text_srf = join_title_font.render("Join Game", True, (255, 255, 255))
+            self.screen.blit(text_srf, ((WIDTH / 2) - (text_srf.get_width() / 2), 50))
             self.gamename(), self.username()
             self.gamename_input_rect(), self.username_input_rect()
             self.gamename_input(), self.username_input()
@@ -87,7 +89,10 @@ class JoinGame:
                             and len(self.input_information()[0]) > 0
                         ):
                             print(self.input_information())
-                            ChooseCharacter(self.screen, self.font).menu()
+                            if ChooseCharacter(self.screen, self.font).menu() == False:
+                                running = False
+                            else:
+                                ChooseCharacter(self.screen, self.font).menu()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
@@ -122,3 +127,4 @@ class JoinGame:
                 self.username_input_color = self.input_not_clicked_color
             pygame.display.update()
             clock.tick(60)
+        return running

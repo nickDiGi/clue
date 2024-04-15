@@ -1,9 +1,13 @@
 import pygame
 import requests
 import json
-from prev_frontend.constants import *
-from prev_frontend.button import Button
-from prev_frontend.character import Character
+from constants import *
+from button import Button
+from character import Character
+
+# from prev_frontend.constants import *
+# from prev_frontend.button import Button
+# from prev_frontend.character import Character
 
 BACKEND_URL = "http://localhost:8000/select_character"
 # BACKEND_URL = "http://localhost:5000/select_character"

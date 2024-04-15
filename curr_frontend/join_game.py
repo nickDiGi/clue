@@ -112,11 +112,15 @@ class JoinGame:
                         else:
                             self.username_text += event.unicode
                     if event.key == pygame.K_RETURN:
-                        print(self.input_information())
-                        if ChooseCharacter(self.screen, self.font).menu() == False:
-                            running = False
-                        else:
-                            ChooseCharacter(self.screen, self.font).menu()
+                        if (
+                            len(self.input_information()[0]) > 0
+                            and len(self.input_information()[0]) > 0
+                        ):
+                            print(self.input_information())
+                            if ChooseCharacter(self.screen, self.font).menu() == False:
+                                running = False
+                            else:
+                                ChooseCharacter(self.screen, self.font).menu()
             if gamename_active:
                 self.gamename_input_color = self.input_clicked_color
             elif not gamename_active:

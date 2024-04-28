@@ -16,9 +16,11 @@ title_font = pygame.font.SysFont(None, 36)
 
 click = False
 
-start_game = JoinGame(screen, font)
+join_game = JoinGame(screen, font)
+create_game = CreateGame(screen, font)
 
-start_game_btn = Button(screen, (WIDTH / 2) - (75), (HEIGHT / 2) - (35), "Start Game")
+create_game_btn = Button(screen, (WIDTH / 2) - (75), (HEIGHT / 2) - (135), "Create Game")
+join_game_btn = Button(screen, (WIDTH / 2) - (75), (HEIGHT / 2) - (35), "Join Game")
 
 
 def main():
@@ -32,10 +34,17 @@ def main():
         )
         screen.blit(text_srf, ((WIDTH / 2) - (text_srf.get_width() / 2), 50))
         mx, my = pygame.mouse.get_pos()
-        if start_game_btn.rect().collidepoint((mx, my)):
+
+        if create_game_btn.rect().collidepoint((mx, my)):
             if click:
-                start_game.menu()
-        start_game_btn.rect_bg(), start_game_btn.rect_text()
+                create_game.menu()
+        create_game_btn.rect_bg(), create_game_btn.rect_text()
+
+        if join_game_btn.rect().collidepoint((mx, my)):
+            if click:
+                join_game.menu()
+        join_game_btn.rect_bg(), join_game_btn.rect_text()
+
         click = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

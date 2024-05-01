@@ -69,9 +69,23 @@ class Game:
         )
         self.screen.blit(char_chosen_srf, (1100, 150))
 
+    def starting_loc(self):
+        char_starting_loc = {
+            "Colonel Mustard": [150, 150],
+            "Miss Scarlett": [200, 150],
+            "Mr Green": [250, 150],
+            "Mrs Peacock": [300, 150],
+            "Mrs White": [350, 150],
+            "Professor Plum": [400, 150],
+        }
+
+        for key, value in char_starting_loc.items():
+            if self.character_chosen == key:
+                return value
+
     def menu(self):
         x_inc, y_inc = 0, 0
-        player = Character(self.screen)
+        player = Character(self.screen, self.starting_loc()[0], self.starting_loc()[1])
         running = True
         while running:
             self.screen.fill((0, 0, 0))

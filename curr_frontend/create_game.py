@@ -8,6 +8,7 @@ clock = pygame.time.Clock()
 create_title_font = pygame.font.SysFont(None, 36)
 label_font = pygame.font.SysFont(None, 28)
 
+
 class CreateGame:
     def __init__(self, screen, font):
         self.screen = screen
@@ -44,7 +45,7 @@ class CreateGame:
         while running:
             self.screen.fill((0, 0, 0))
             mx, my = pygame.mouse.get_pos()
-            text_srf = create_title_font.render("Join Game", True, (255, 255, 255))
+            text_srf = create_title_font.render("Create Game", True, (255, 255, 255))
             self.screen.blit(text_srf, ((WIDTH / 2) - (text_srf.get_width() / 2), 50))
             self.username()
             self.username_input_rect()
@@ -68,10 +69,17 @@ class CreateGame:
                             and len(self.input_information()[0]) > 0
                         ):
                             print(self.input_information())
-                            if ChooseCharacter(self.screen, self.font).menu() == False:
+                            if (
+                                ChooseCharacter(
+                                    self.screen, self.font, self.input_information()[0]
+                                ).menu()
+                                == False
+                            ):
                                 running = False
                             else:
-                                ChooseCharacter(self.screen, self.font).menu()
+                                ChooseCharacter(
+                                    self.screen, self.font, self.input_information()[0]
+                                ).menu()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
@@ -88,10 +96,17 @@ class CreateGame:
                             and len(self.input_information()[0]) > 0
                         ):
                             print(self.input_information())
-                            if ChooseCharacter(self.screen, self.font).menu() == False:
+                            if (
+                                ChooseCharacter(
+                                    self.screen, self.font, self.input_information()[0]
+                                ).menu()
+                                == False
+                            ):
                                 running = False
                             else:
-                                ChooseCharacter(self.screen, self.font).menu()
+                                ChooseCharacter(
+                                    self.screen, self.font, self.input_information()[0]
+                                ).menu()
             if username_active:
                 self.username_input_color = self.input_clicked_color
             elif not username_active:

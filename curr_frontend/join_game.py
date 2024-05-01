@@ -89,10 +89,23 @@ class JoinGame:
                             and len(self.input_information()[0]) > 0
                         ):
                             print(self.input_information())
-                            if ChooseCharacter(self.screen, self.font).menu() == False:
+                            if (
+                                ChooseCharacter(
+                                    self.screen,
+                                    self.font,
+                                    self.username_text,
+                                    self.gamename_text,
+                                ).menu()
+                                == False
+                            ):
                                 running = False
                             else:
-                                ChooseCharacter(self.screen, self.font).menu()
+                                ChooseCharacter(
+                                    self.screen,
+                                    self.font,
+                                    self.username_text,
+                                    self.gamename_text,
+                                ).menu()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
@@ -117,10 +130,23 @@ class JoinGame:
                             and len(self.input_information()[0]) > 0
                         ):
                             print(self.input_information())
-                            if ChooseCharacter(self.screen, self.font).menu() == False:
+                            if (
+                                ChooseCharacter(
+                                    self.screen,
+                                    self.font,
+                                    self.username_text,
+                                    self.gamename_text,
+                                ).menu()
+                                == False
+                            ):
                                 running = False
                             else:
-                                ChooseCharacter(self.screen, self.font).menu()
+                                ChooseCharacter(
+                                    self.screen,
+                                    self.font,
+                                    self.username_text,
+                                    self.gamename_text,
+                                ).menu()
             if gamename_active:
                 self.gamename_input_color = self.input_clicked_color
             elif not gamename_active:

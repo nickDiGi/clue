@@ -1,18 +1,23 @@
 import pygame, sys
 from character import Character
+from constants import *
 
 # from client import main
 
 clock = pygame.time.Clock()
+details_font = pygame.font.SysFont(None, 28)
 
 
 # counter code, button text - https://www.youtube.com/watch?v=jyrP0dDGqgY
 
 
 class Game:
-    def __init__(self, screen, font):
+    def __init__(self, screen, font, username, character_chosen, gamename=None):
         self.screen = screen
         self.font = font
+        self.username = username
+        self.character_chosen = character_chosen
+        self.gamename = gamename
         self.name = "Game"
         self.clicked_up = False
         self.clicked_down = False
@@ -44,6 +49,26 @@ class Game:
                 x_counter += 1
             y_counter += 1
 
+    def display_username(self):
+        username_srf = details_font.render(
+            (f"Welcome, {self.username}"), True, (255, 255, 255)
+        )
+        self.screen.blit(username_srf, (1100, 100))
+
+    def display_gamename(self):
+        if self.gamename != None:
+            msg = f"Gamename: {self.gamename}"
+        else:
+            msg = ""
+        gamename_srf = details_font.render((msg), True, (255, 255, 255))
+        self.screen.blit(gamename_srf, (1100, 200))
+
+    def display_character_chosen(self):
+        char_chosen_srf = details_font.render(
+            (f"Character: {self.character_chosen}"), True, (255, 255, 255)
+        )
+        self.screen.blit(char_chosen_srf, (1100, 150))
+
     def menu(self):
         x_inc, y_inc = 0, 0
         player = Character(self.screen)
@@ -52,6 +77,9 @@ class Game:
             self.screen.fill((0, 0, 0))
             text_srf = self.font.render("Game", True, (255, 255, 255))
             self.screen.blit(text_srf, (50, 50))
+            self.display_username()
+            self.display_character_chosen()
+            self.display_gamename()
             self.game_board()
             player.display(x_inc=x_inc, y_inc=y_inc)
             for event in pygame.event.get():

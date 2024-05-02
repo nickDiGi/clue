@@ -116,21 +116,25 @@ class Game:
                     if player.curr_location(x_inc=x_inc, y_inc=y_inc)[1] > 150:
                         y_inc -= 50
                         print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
+                        print(player.room_location(x_inc=x_inc, y_inc=y_inc))
                         self.clicked_up = False
                 elif event.type == pygame.KEYDOWN and self.clicked_down == True:
                     if player.curr_location(x_inc=x_inc, y_inc=y_inc)[1] < 650:
                         y_inc += 50
                         print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
+                        print(player.room_location(x_inc=x_inc, y_inc=y_inc))
                         self.clicked_down = False
                 elif event.type == pygame.KEYDOWN and self.clicked_right == True:
                     if player.curr_location(x_inc=x_inc, y_inc=y_inc)[0] < 650:
                         x_inc += 50
                         print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
+                        print(player.room_location(x_inc=x_inc, y_inc=y_inc))
                         self.clicked_right = False
                 elif event.type == pygame.KEYDOWN and self.clicked_left == True:
                     if player.curr_location(x_inc=x_inc, y_inc=y_inc)[0] > 150:
                         x_inc -= 50
                         print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
+                        print(player.room_location(x_inc=x_inc, y_inc=y_inc))
                         self.clicked_left = False
             pygame.display.update()
             clock.tick(60)

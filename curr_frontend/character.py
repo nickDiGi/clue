@@ -20,7 +20,31 @@ class Character:
         return [x_value, y_value]
 
     def room_location(self, x_inc=0, y_inc=0):
-        pass
+        x_val = self.curr_location(x_inc, y_inc)[0]
+        y_val = self.curr_location(x_inc, y_inc)[1]
+        # column 1
+        if (x_val >= 150 and x_val <= 250) and (y_val >= 150 and y_val <= 250):
+            return "Study"
+        elif (x_val >= 150 and x_val <= 250) and (y_val >= 350 and y_val <= 450):
+            return "Library"
+        elif (x_val >= 150 and x_val <= 250) and (y_val >= 550 and y_val <= 650):
+            return "Conservatory"
+        # column 2
+        elif (x_val >= 350 and x_val <= 450) and (y_val >= 150 and y_val <= 250):
+            return "Hall"
+        elif (x_val >= 350 and x_val <= 450) and (y_val >= 350 and y_val <= 450):
+            return "Billiard Room"
+        elif (x_val >= 350 and x_val <= 450) and (y_val >= 550 and y_val <= 650):
+            return "Ballroom"
+        # column 3
+        elif (x_val >= 550 and x_val <= 650) and (y_val >= 150 and y_val <= 250):
+            return "Lounge"
+        elif (x_val >= 550 and x_val <= 650) and (y_val >= 350 and y_val <= 450):
+            return "Dining Room"
+        elif (x_val >= 550 and x_val <= 650) and (y_val >= 550 and y_val <= 650):
+            return "Kitchen"
+        else:
+            return "Hallway"
 
     def display(self, x_inc=0, y_inc=0):
         char_rect = pygame.Rect(

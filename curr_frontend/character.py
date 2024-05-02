@@ -14,8 +14,19 @@ class Character:
         self.width = 50
         self.height = 50
 
-    def display(self, x_inc=0, y_inc=0):
+    def curr_location(self, x_inc=0, y_inc=0):
         x_value = self.starting_x + x_inc
         y_value = self.starting_y + y_inc
-        char_rect = pygame.Rect(x_value, y_value, self.width, self.height)
+        return [x_value, y_value]
+
+    def room_location(self, x_inc=0, y_inc=0):
+        pass
+
+    def display(self, x_inc=0, y_inc=0):
+        char_rect = pygame.Rect(
+            self.curr_location(x_inc, y_inc)[0],
+            self.curr_location(x_inc, y_inc)[1],
+            self.width,
+            self.height,
+        )
         pygame.draw.rect(self.screen, (155, 155, 155), char_rect)

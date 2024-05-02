@@ -95,6 +95,7 @@ class Game:
             self.display_character_chosen()
             self.display_gamename()
             self.game_board()
+            player.curr_location(x_inc=x_inc, y_inc=y_inc)
             player.display(x_inc=x_inc, y_inc=y_inc)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -112,17 +113,25 @@ class Game:
                     if event.key == pygame.K_LEFT:
                         self.clicked_left = True
                 if event.type == pygame.KEYUP and self.clicked_up == True:
-                    y_inc -= 50
-                    self.clicked_up = False
+                    if player.curr_location(x_inc=x_inc, y_inc=y_inc)[1] > 150:
+                        y_inc -= 50
+                        print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
+                        self.clicked_up = False
                 elif event.type == pygame.KEYDOWN and self.clicked_down == True:
-                    y_inc += 50
-                    self.clicked_down = False
+                    if player.curr_location(x_inc=x_inc, y_inc=y_inc)[1] < 650:
+                        y_inc += 50
+                        print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
+                        self.clicked_down = False
                 elif event.type == pygame.KEYDOWN and self.clicked_right == True:
-                    x_inc += 50
-                    self.clicked_right = False
+                    if player.curr_location(x_inc=x_inc, y_inc=y_inc)[0] < 650:
+                        x_inc += 50
+                        print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
+                        self.clicked_right = False
                 elif event.type == pygame.KEYDOWN and self.clicked_left == True:
-                    x_inc -= 50
-                    self.clicked_left = False
+                    if player.curr_location(x_inc=x_inc, y_inc=y_inc)[0] > 150:
+                        x_inc -= 50
+                        print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
+                        self.clicked_left = False
             pygame.display.update()
             clock.tick(60)
         return running

@@ -71,12 +71,12 @@ class Game:
 
     def starting_loc(self):
         char_starting_loc = {
-            "Colonel Mustard": [150, 150],
-            "Miss Scarlett": [200, 150],
-            "Mr Green": [250, 150],
-            "Mrs Peacock": [300, 150],
-            "Mrs White": [350, 150],
-            "Professor Plum": [400, 150],
+            "Colonel Mustard": [600, 300],
+            "Miss Scarlet": [500, 200],
+            "Mr Green": [300, 600],
+            "Mrs Peacock": [200, 500],
+            "Mrs White": [500, 600],
+            "Professor Plum": [200, 300],
         }
 
         for key, value in char_starting_loc.items():

@@ -96,6 +96,8 @@ class Game:
             self.display_gamename()
             self.game_board()
             player.curr_location(x_inc=x_inc, y_inc=y_inc)
+            player.display_curr_location(x_inc=x_inc, y_inc=y_inc)
+            player.display_room_location(x_inc=x_inc, y_inc=y_inc)
             player.display(x_inc=x_inc, y_inc=y_inc)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

@@ -2,7 +2,7 @@ import pygame, sys
 
 pygame.init()
 
-font = pygame.font.SysFont(None, 24)
+font = pygame.font.SysFont(None, 28)
 
 
 class Character:
@@ -18,6 +18,12 @@ class Character:
         x_value = self.starting_x + x_inc
         y_value = self.starting_y + y_inc
         return [x_value, y_value]
+
+    def display_curr_location(self, x_inc=0, y_inc=0):
+        curr_loc_srf = font.render(
+            (f"Location: {self.curr_location(x_inc, y_inc)}"), True, (255, 255, 255)
+        )
+        self.screen.blit(curr_loc_srf, (1100, 250))
 
     def room_location(self, x_inc=0, y_inc=0):
         x_val = self.curr_location(x_inc, y_inc)[0]
@@ -45,6 +51,12 @@ class Character:
             return "Kitchen"
         else:
             return "Hallway"
+
+    def display_room_location(self, x_inc, y_inc):
+        room_loc_srf = font.render(
+            (f"Room: {self.room_location(x_inc, y_inc)}"), True, (255, 255, 255)
+        )
+        self.screen.blit(room_loc_srf, (1100, 300))
 
     def display(self, x_inc=0, y_inc=0):
         char_rect = pygame.Rect(

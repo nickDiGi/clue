@@ -49,8 +49,23 @@ class Character:
             return "Dining Room"
         elif (x_val >= 550 and x_val <= 650) and (y_val >= 550 and y_val <= 650):
             return "Kitchen"
-        else:
+        elif (
+            (x_val == 200 and y_val == 300)
+            or (x_val == 400 and y_val == 300)
+            or (x_val == 600 and y_val == 300)
+            or (x_val == 200 and y_val == 500)
+            or (x_val == 400 and y_val == 500)
+            or (x_val == 600 and y_val == 500)
+            or (x_val == 300 and y_val == 200)
+            or (x_val == 300 and y_val == 400)
+            or (x_val == 300 and y_val == 600)
+            or (x_val == 500 and y_val == 200)
+            or (x_val == 500 and y_val == 400)
+            or (x_val == 500 and y_val == 600)
+        ):
             return "Hallway"
+        else:
+            return "Not Available"
 
     def display_room_location(self, x_inc, y_inc):
         room_loc_srf = font.render(

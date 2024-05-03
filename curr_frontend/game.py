@@ -23,6 +23,7 @@ class Game:
         self.clicked_down = False
         self.clicked_right = False
         self.clicked_left = False
+        self.valid_move = False
         self.pos = pygame.mouse.get_pos()
         self.board_pos = [0, 0]
 
@@ -48,6 +49,30 @@ class Game:
                 pygame.draw.rect(self.screen, color, rect, 1)
                 x_counter += 1
             y_counter += 1
+
+    def valid_grid_locations(self):
+        valid_grid_locations = []
+        block_size = 50
+        y_counter = 0
+        for x in range(150, 700, block_size):
+            x_counter = 0
+            for y in range(150, 700, block_size):
+                if x == 300 or x == 500:
+                    if x_counter % 4 == 1:
+                        valid_grid_locations.append([x, y])
+                elif y == 300 or y == 500:
+                    if y_counter % 4 == 1:
+                        valid_grid_locations.append([x, y])
+                else:
+                    valid_grid_locations.append([x, y])
+                x_counter += 1
+            y_counter += 1
+        return valid_grid_locations
+
+    def is_valid_grid_location(self, x_location, y_location):
+        for i in self.valid_grid_locations():
+            if (x_location == i[0]) and (y_location == i[1]):
+                return True
 
     def display_username(self):
         username_srf = details_font.render(
@@ -97,6 +122,8 @@ class Game:
             self.game_board()
             player.curr_location(x_inc=x_inc, y_inc=y_inc)
             player.display_curr_location(x_inc=x_inc, y_inc=y_inc)
+            x_location = player.curr_location(x_inc=x_inc, y_inc=y_inc)[0]
+            y_location = player.curr_location(x_inc=x_inc, y_inc=y_inc)[1]
             player.display_room_location(x_inc=x_inc, y_inc=y_inc)
             player.display(x_inc=x_inc, y_inc=y_inc)
             for event in pygame.event.get():
@@ -114,30 +141,34 @@ class Game:
                         self.clicked_right = True
                     if event.key == pygame.K_LEFT:
                         self.clicked_left = True
-                if event.type == pygame.KEYUP and self.clicked_up == True:
-                    if player.curr_location(x_inc=x_inc, y_inc=y_inc)[1] > 150:
+                if event.type == pygame.KEYDOWN and self.clicked_up == True:
+                    # if player.curr_location(x_inc=x_inc, y_inc=y_inc)[1] > 150:
+                    if self.is_valid_grid_location(x_location, y_location - 50):
                         y_inc -= 50
-                        print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
-                        print(player.room_location(x_inc=x_inc, y_inc=y_inc))
                         self.clicked_up = False
+                    else:
+                        y_inc -= 0
                 elif event.type == pygame.KEYDOWN and self.clicked_down == True:
-                    if player.curr_location(x_inc=x_inc, y_inc=y_inc)[1] < 650:
+                    # if player.curr_location(x_inc=x_inc, y_inc=y_inc)[1] < 650:
+                    if self.is_valid_grid_location(x_location, y_location + 50):
                         y_inc += 50
-                        print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
-                        print(player.room_location(x_inc=x_inc, y_inc=y_inc))
                         self.clicked_down = False
+                    else:
+                        y_inc += 0
                 elif event.type == pygame.KEYDOWN and self.clicked_right == True:
-                    if player.curr_location(x_inc=x_inc, y_inc=y_inc)[0] < 650:
+                    # if player.curr_location(x_inc=x_inc, y_inc=y_inc)[0] < 650:
+                    if self.is_valid_grid_location(x_location + 50, y_location):
                         x_inc += 50
-                        print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
-                        print(player.room_location(x_inc=x_inc, y_inc=y_inc))
                         self.clicked_right = False
+                    else:
+                        x_inc += 0
                 elif event.type == pygame.KEYDOWN and self.clicked_left == True:
-                    if player.curr_location(x_inc=x_inc, y_inc=y_inc)[0] > 150:
+                    # if player.curr_location(x_inc=x_inc, y_inc=y_inc)[0] > 150:
+                    if self.is_valid_grid_location(x_location - 50, y_location):
                         x_inc -= 50
-                        print(player.curr_location(x_inc=x_inc, y_inc=y_inc))
-                        print(player.room_location(x_inc=x_inc, y_inc=y_inc))
                         self.clicked_left = False
+                    else:
+                        x_inc -= 0
             pygame.display.update()
             clock.tick(60)
         return running

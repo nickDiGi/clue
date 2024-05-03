@@ -142,7 +142,9 @@ def show_game_board():
 # Update the positions of items and characters on the board
 def update_game_board(new_player_info):
     global player_info
-    # TODO: Connect GUI here
+    
+    lobby_screen.running = False
+    game_board.menu()
 
     # Text based version
     if not player_info:
@@ -524,6 +526,8 @@ Main
 '''
 def main():
     global lobby_screen
+    global game_board
+
     pygame.init()
     player_name = ""
     game_id = -1
@@ -547,19 +551,15 @@ def main():
     character_choice = choose_character.menu()
     print(character_choice)
 
-    print("1")
+    # TODO: Fix threading to stop lag
     if(game_id == -1):
-        print("2")
         message_thread = threading.Thread(target=create_game(player_name))
-        print("3")
+        message_thread.start()
     else:
         message_thread = threading.Thread(target=join_game(player_name, game_id))
-    print("4")
-    message_thread.daemon = True
-    print("5")
-    message_thread.start()
-    print("6")
+        message_thread.start()
 
+    game_board = Game(screen, font, player_name, character_choice, game_id)
     lobby_screen.menu()
 
     # Sleep while waiting for incoming messages

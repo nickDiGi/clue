@@ -23,6 +23,7 @@ class LobbyScreen:
         self.screen = screen
         self.players = []
         self.font = font
+        self.running = True
 
     def add_player(self, new_player_list):
         for new_player in new_player_list:
@@ -54,11 +55,10 @@ class LobbyScreen:
         pygame.display.set_caption("Lobby Screen")
         clock = pygame.time.Clock()
 
-        running = True
-        while running:
+        while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    self.running = False
                     pygame.quit()
                     sys.exit()
 

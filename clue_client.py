@@ -5,8 +5,15 @@ import time
 import threading
 # TODO: Replace clue_game_logic with an interface that provides less visibility
 import clue_game_logic
-import frontend.client
-import frontend.test_lobby
+
+import pygame
+
+from frontend.lobby import Lobby
+from frontend.game import Game
+from frontend.client import MainMenu
+from frontend.test_lobby import LobbyScreen
+from frontend.choose_character import ChooseCharacter
+from frontend.constants import *
 
 # Global values
 player_name = ""
@@ -67,20 +74,18 @@ Functions for displaying GUI elements
 # Create and display GUI elements for the main menu
 # Should include a button for "Create New Game" and a button for "Join Game"
 def show_main_menu():
-    frontend.client.main()
-
     # Text based version
-#    print("Welcome to Clue!")
-#    print("Do you want to create a new game or join an existing one?")
-#    print("1. Create a new game")
-#    print("2. Join an existing game")
-#
-#    while True:
-#        option = input("Enter your choice (1 or 2): ")
-#        if option in ('1', '2'):
-#            return option
-#        else:
-#            print("Invalid choice. Please enter 1 or 2.")
+    print("Welcome to Clue!")
+    print("Do you want to create a new game or join an existing one?")
+    print("1. Create a new game")
+    print("2. Join an existing game")
+
+    while True:
+        option = input("Enter your choice (1 or 2): ")
+        if option in ('1', '2'):
+            return option
+        else:
+            print("Invalid choice. Please enter 1 or 2.")
     # End text based version
 
 # Create and display GUI elements for the pop-up that appears after you select "Join Game"
@@ -110,8 +115,9 @@ def show_join_game_popup():
 # Should include a list of players in the game a "Start" or "Ready Up" button and the game ID
 def show_lobby_menu(lobby_roster):
     global game_id
-    time.sleep(1)
-    frontend.test_lobby.LobbyScreen.add_player("Player 2", "Character B")
+    global lobby_screen
+
+    lobby_screen.add_player(lobby_roster)
     
     # Text based version
     print('\nA NEW PLAYER HAS JOINED THE LOBBY!')
@@ -476,8 +482,7 @@ def process_message(message):
         # Show players the list of other players in the lobby, and the lobby ID
         if (message.message_type == clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE):
             game_id = message.sender_id
-            lobby_roster = (', '.join(message.game_state_data))
-            show_lobby_menu(lobby_roster)
+            show_lobby_menu(message.game_state_data)
 
         # Update the positions of players on the board
         elif (message.message_type == clue_messaging.Message_Types.GAME_STATE_UPDATE):
@@ -518,7 +523,45 @@ def process_message(message):
 Main
 '''
 def main():
-    show_main_menu()
+    global lobby_screen
+    pygame.init()
+    player_name = ""
+    game_id = -1
+    
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    font = pygame.font.SysFont(None, 28)
+
+    main_menu = MainMenu(screen, font)
+    choose_character = ChooseCharacter(screen, font)
+    lobby_screen = LobbyScreen(screen, font)
+
+    #show_main_menu() OLD TEXT BASED MAIN MENU
+
+    selections = main_menu.menu()
+    if len(selections) > 1:
+        player_name = selections[1]
+        game_id = selections[0]
+    else:
+        player_name = selections[0]
+
+    character_choice = choose_character.menu()
+    print(character_choice)
+
+    print("1")
+    if(game_id == -1):
+        print("2")
+        message_thread = threading.Thread(target=create_game(player_name))
+        print("3")
+    else:
+        message_thread = threading.Thread(target=join_game(player_name, game_id))
+    print("4")
+    message_thread.daemon = True
+    print("5")
+    message_thread.start()
+    print("6")
+
+    lobby_screen.menu()
+
     # Sleep while waiting for incoming messages
     while True:
         time.sleep(5)

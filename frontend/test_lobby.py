@@ -24,8 +24,13 @@ class LobbyScreen:
         self.players = []
         self.font = font
 
-    def add_player(self, name, character):
-        self.players.append(Player(name, character))
+    def add_player(self, new_player_list):
+        for new_player in new_player_list:
+            already_in_lobby = False
+            for curr_player in self.players:
+                if curr_player.name == new_player:
+                    already_in_lobby = True
+            if not already_in_lobby: self.players.append(Player(new_player, "Placeholder Chosen Character"))
 
     def draw(self):
         self.screen.fill(BLACK)
@@ -48,10 +53,6 @@ class LobbyScreen:
     def menu(self):
         pygame.display.set_caption("Lobby Screen")
         clock = pygame.time.Clock()
-
-        # Sample players
-        self.add_player("Player 1", "Character A")
-        self.add_player("Player 2", "Character B")
 
         running = True
         while running:

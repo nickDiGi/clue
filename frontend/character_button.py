@@ -1,5 +1,5 @@
 import pygame
-from constants import *
+from frontend.constants import *
 
 pygame.init()
 

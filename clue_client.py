@@ -5,6 +5,8 @@ import time
 import threading
 # TODO: Replace clue_game_logic with an interface that provides less visibility
 import clue_game_logic
+import frontend.client
+import frontend.test_lobby
 
 # Global values
 player_name = ""
@@ -65,20 +67,20 @@ Functions for displaying GUI elements
 # Create and display GUI elements for the main menu
 # Should include a button for "Create New Game" and a button for "Join Game"
 def show_main_menu():
-    # TODO: Connect GUI here
+    frontend.client.main()
 
     # Text based version
-    print("Welcome to Clue!")
-    print("Do you want to create a new game or join an existing one?")
-    print("1. Create a new game")
-    print("2. Join an existing game")
-
-    while True:
-        option = input("Enter your choice (1 or 2): ")
-        if option in ('1', '2'):
-            return option
-        else:
-            print("Invalid choice. Please enter 1 or 2.")
+#    print("Welcome to Clue!")
+#    print("Do you want to create a new game or join an existing one?")
+#    print("1. Create a new game")
+#    print("2. Join an existing game")
+#
+#    while True:
+#        option = input("Enter your choice (1 or 2): ")
+#        if option in ('1', '2'):
+#            return option
+#        else:
+#            print("Invalid choice. Please enter 1 or 2.")
     # End text based version
 
 # Create and display GUI elements for the pop-up that appears after you select "Join Game"
@@ -108,7 +110,8 @@ def show_join_game_popup():
 # Should include a list of players in the game a "Start" or "Ready Up" button and the game ID
 def show_lobby_menu(lobby_roster):
     global game_id
-    # TODO: Connect GUI here
+    time.sleep(1)
+    frontend.test_lobby.LobbyScreen.add_player("Player 2", "Character B")
     
     # Text based version
     print('\nA NEW PLAYER HAS JOINED THE LOBBY!')
@@ -207,6 +210,16 @@ def disable_controls():
 '''
 Functions for handling user actions
 '''
+def create_game(player_name):
+        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.CREATE_GAME, player_name, None, None)
+        connect_to_server()
+        send_message(create_game_message)
+
+def join_game(player_name, game_id):
+        join_game_message =  clue_messaging.Message(clue_messaging.Message_Types.JOIN_GAME, player_name, int(game_id), None)
+        connect_to_server()
+        send_message(join_game_message)
+
 # Process where the player can move and present their options for moving
 def handle_move(player_state):
     global turn_ended
@@ -505,19 +518,7 @@ def process_message(message):
 Main
 '''
 def main():
-    choice = show_main_menu()
-    if choice == '1':
-        show_create_game_popup()
-        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.CREATE_GAME, player_name, None, None)
-        connect_to_server()
-        send_message(create_game_message)
-        # Call function to create a new game
-    else:
-        game_id = show_join_game_popup()
-        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.JOIN_GAME, player_name, int(game_id), None)
-        connect_to_server()
-        send_message(create_game_message)
-
+    show_main_menu()
     # Sleep while waiting for incoming messages
     while True:
         time.sleep(5)

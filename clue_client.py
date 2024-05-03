@@ -6,6 +6,15 @@ import threading
 # TODO: Replace clue_game_logic with an interface that provides less visibility
 import clue_game_logic
 
+import pygame
+
+from frontend.lobby import Lobby
+from frontend.game import Game
+from frontend.client import MainMenu
+from frontend.test_lobby import LobbyScreen
+from frontend.choose_character import ChooseCharacter
+from frontend.constants import *
+
 # Global values
 player_name = ""
 game_id = 0
@@ -65,8 +74,6 @@ Functions for displaying GUI elements
 # Create and display GUI elements for the main menu
 # Should include a button for "Create New Game" and a button for "Join Game"
 def show_main_menu():
-    # TODO: Connect GUI here
-
     # Text based version
     print("Welcome to Clue!")
     print("Do you want to create a new game or join an existing one?")
@@ -108,7 +115,9 @@ def show_join_game_popup():
 # Should include a list of players in the game a "Start" or "Ready Up" button and the game ID
 def show_lobby_menu(lobby_roster):
     global game_id
-    # TODO: Connect GUI here
+    global lobby_screen
+
+    lobby_screen.add_player(lobby_roster)
     
     # Text based version
     print('\nA NEW PLAYER HAS JOINED THE LOBBY!')
@@ -207,6 +216,16 @@ def disable_controls():
 '''
 Functions for handling user actions
 '''
+def create_game(player_name):
+        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.CREATE_GAME, player_name, None, None)
+        connect_to_server()
+        send_message(create_game_message)
+
+def join_game(player_name, game_id):
+        join_game_message =  clue_messaging.Message(clue_messaging.Message_Types.JOIN_GAME, player_name, int(game_id), None)
+        connect_to_server()
+        send_message(join_game_message)
+
 # Process where the player can move and present their options for moving
 def handle_move(player_state):
     global turn_ended
@@ -463,8 +482,7 @@ def process_message(message):
         # Show players the list of other players in the lobby, and the lobby ID
         if (message.message_type == clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE):
             game_id = message.sender_id
-            lobby_roster = (', '.join(message.game_state_data))
-            show_lobby_menu(lobby_roster)
+            show_lobby_menu(message.game_state_data)
 
         # Update the positions of players on the board
         elif (message.message_type == clue_messaging.Message_Types.GAME_STATE_UPDATE):
@@ -505,18 +523,44 @@ def process_message(message):
 Main
 '''
 def main():
-    choice = show_main_menu()
-    if choice == '1':
-        show_create_game_popup()
-        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.CREATE_GAME, player_name, None, None)
-        connect_to_server()
-        send_message(create_game_message)
-        # Call function to create a new game
+    global lobby_screen
+    pygame.init()
+    player_name = ""
+    game_id = -1
+    
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    font = pygame.font.SysFont(None, 28)
+
+    main_menu = MainMenu(screen, font)
+    choose_character = ChooseCharacter(screen, font)
+    lobby_screen = LobbyScreen(screen, font)
+
+    #show_main_menu() OLD TEXT BASED MAIN MENU
+
+    selections = main_menu.menu()
+    if len(selections) > 1:
+        player_name = selections[1]
+        game_id = selections[0]
     else:
-        game_id = show_join_game_popup()
-        create_game_message =  clue_messaging.Message(clue_messaging.Message_Types.JOIN_GAME, player_name, int(game_id), None)
-        connect_to_server()
-        send_message(create_game_message)
+        player_name = selections[0]
+
+    character_choice = choose_character.menu()
+    print(character_choice)
+
+    print("1")
+    if(game_id == -1):
+        print("2")
+        message_thread = threading.Thread(target=create_game(player_name))
+        print("3")
+    else:
+        message_thread = threading.Thread(target=join_game(player_name, game_id))
+    print("4")
+    message_thread.daemon = True
+    print("5")
+    message_thread.start()
+    print("6")
+
+    lobby_screen.menu()
 
     # Sleep while waiting for incoming messages
     while True:

@@ -1,19 +1,16 @@
 import pygame, sys, os
-from button import Button
-from game import Game
-from constants import *
-from character_button import CharacterButton
+from frontend.button import Button
+from frontend.constants import *
+from frontend.character_button import CharacterButton
 
 clock = pygame.time.Clock()
 choose_character_title_font = pygame.font.SysFont(None, 36)
 
 
 class ChooseCharacter:
-    def __init__(self, screen, font, username, gamename=None):
+    def __init__(self, screen, font):
         self.screen = screen
         self.font = font
-        self.username = username
-        self.gamename = gamename
         self.character_hover = ""
 
     def character_names(self):
@@ -118,26 +115,8 @@ class ChooseCharacter:
                     if event.key == pygame.K_ESCAPE:
                         running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    print(self.character_clicked())
-                    if (
-                        Game(
-                            self.screen,
-                            self.font,
-                            self.username,
-                            self.character_clicked(),
-                            self.gamename,
-                        ).menu()
-                        == False
-                    ):
-                        running = False
-                    else:
-                        Game(
-                            self.screen,
-                            self.font,
-                            self.username,
-                            self.character_clicked(),
-                            self.gamename,
-                        ).menu()
+                   return self.character_clicked()
+                
             pygame.display.update()
             clock.tick(60)
         return running

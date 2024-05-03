@@ -1,6 +1,6 @@
 import pygame, sys
-from character import Character
-from constants import *
+from frontend.character import Character
+from frontend.constants import *
 
 # from client import main
 

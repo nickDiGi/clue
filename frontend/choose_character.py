@@ -8,9 +8,11 @@ choose_character_title_font = pygame.font.SysFont(None, 36)
 
 
 class ChooseCharacter:
-    def __init__(self, screen, font):
+    def __init__(self, screen, font, username=None, gamename=None):
         self.screen = screen
         self.font = font
+        self.username = username
+        self.gamename = gamename
         self.character_hover = ""
 
     def character_names(self):
@@ -115,8 +117,8 @@ class ChooseCharacter:
                     if event.key == pygame.K_ESCAPE:
                         running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                   return self.character_clicked()
-                
+                    return self.character_clicked()
+
             pygame.display.update()
             clock.tick(60)
         return running

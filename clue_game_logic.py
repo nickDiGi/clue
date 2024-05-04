@@ -50,12 +50,12 @@ class Room(Enum):
 Player
 '''
 class Player:
-    def __init__(self, name, address, cards):
+    def __init__(self, name, address, character):
         self.name = name
         self.address = address
-        self.cards = cards
+        self.character = character
+        self.cards = []
         self.turn_order_number = None
-        self.character = None
         self.position = None
         self.lost_game = False
 
@@ -102,9 +102,9 @@ class Player:
 Game-Logic Handler
 '''
 class Game_Session:
-    def __init__(self, name, address):
+    def __init__(self, name, address, character):
         self.players = [
-            Player(name, address, []),
+            Player(name, address, character),
         ]
         # TODO: Check below random number to ensure that it does not match the ID of an existing game
         self.id = random.randint(10000, 99999)
@@ -114,8 +114,8 @@ class Game_Session:
         self.suggesting_player = None
         self.winning_cards = []
 
-    def add_player(self, name, address):
-        self.players.append(Player(name, address, []))
+    def add_player(self, name, address, character):
+        self.players.append(Player(name, address, character))
 
     def get_players(self):
         return self.players
@@ -199,14 +199,17 @@ class Game_Session:
 
     def set_player_positions(self):
         # Assign each player a character and starting position
-        suspect_list = list(Suspect)
+        #suspect_list = list(Suspect)
         room_list = list(Room)
         players = self.get_players()
         hallway_offset = 9
         index = 0
+
+        print("\nSetting Player Positions")
+
         for player in players:
-            character = suspect_list[index]
-            player.set_character(character)
+            #character = suspect_list[index]
+            #player.set_character(character)
             player.set_position(room_list[index+hallway_offset])
             index = index + 1
             player.set_turn_order_number(index)

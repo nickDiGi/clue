@@ -10,6 +10,10 @@ details_font = pygame.font.SysFont(None, 28)
 
 # counter code, button text - https://www.youtube.com/watch?v=jyrP0dDGqgY
 
+# Button constants
+BUTTON_WIDTH = 120
+BUTTON_HEIGHT = 30
+BUTTON_MARGIN = 10
 
 class Game:
     def __init__(self, screen, font, username, character_chosen, gamename=None):
@@ -26,6 +30,15 @@ class Game:
         self.valid_move = False
         self.pos = pygame.mouse.get_pos()
         self.board_pos = [0, 0]
+
+        # Button texts
+        self.buttons = [
+            ("Move", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 5 - BUTTON_MARGIN * 5)),
+            ("Suggest", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 4 - BUTTON_MARGIN * 4)),
+            ("Accuse", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 3 - BUTTON_MARGIN * 3)),
+            ("View Cards", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 2 - BUTTON_MARGIN * 2)),
+            ("End Turn", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT - BUTTON_MARGIN)),
+        ]
 
     def game_board(self):
         block_size = 50
@@ -49,6 +62,14 @@ class Game:
                 pygame.draw.rect(self.screen, color, rect, 1)
                 x_counter += 1
             y_counter += 1
+
+    def draw_buttons(self):
+        for button_text, button_pos in self.buttons:
+            button_rect = pygame.Rect(button_pos, (BUTTON_WIDTH, BUTTON_HEIGHT))
+            pygame.draw.rect(self.screen, (100, 100, 100), button_rect)
+            text_surface = self.font.render(button_text, True, (255, 255, 255))
+            text_rect = text_surface.get_rect(center=button_rect.center)
+            self.screen.blit(text_surface, text_rect)
 
     def valid_grid_locations(self):
         valid_grid_locations = []
@@ -96,12 +117,12 @@ class Game:
 
     def starting_loc(self):
         char_starting_loc = {
-            "Colonel Mustard": [600, 300],
-            "Miss Scarlet": [500, 200],
-            "Mr Green": [300, 600],
-            "Mrs Peacock": [200, 500],
-            "Mrs White": [500, 600],
-            "Professor Plum": [200, 300],
+            "MUSTARD": [600, 300],
+            "SCARLET": [500, 200],
+            "GREEN": [300, 600],
+            "PEACOCK": [200, 500],
+            "WHITE": [500, 600],
+            "PLUM": [200, 300],
         }
 
         for key, value in char_starting_loc.items():
@@ -126,6 +147,9 @@ class Game:
             y_location = player.curr_location(x_inc=x_inc, y_inc=y_inc)[1]
             player.display_room_location(x_inc=x_inc, y_inc=y_inc)
             player.display(x_inc=x_inc, y_inc=y_inc)
+
+            self.draw_buttons()  # Draw buttons
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()

@@ -28,16 +28,17 @@ class Game:
         self.clicked_right = False
         self.clicked_left = False
         self.valid_move = False
+        self.buttons_enabled = False
         self.pos = pygame.mouse.get_pos()
         self.board_pos = [0, 0]
 
-        # Button texts
+        # Buttons
         self.buttons = [
-            ("Move", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 5 - BUTTON_MARGIN * 5)),
-            ("Suggest", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 4 - BUTTON_MARGIN * 4)),
-            ("Accuse", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 3 - BUTTON_MARGIN * 3)),
-            ("View Cards", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 2 - BUTTON_MARGIN * 2)),
-            ("End Turn", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT - BUTTON_MARGIN)),
+            ("Move", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT * 5 - BUTTON_MARGIN * 5 - 200)),
+            ("Suggest", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT * 4 - BUTTON_MARGIN * 4 - 200)),
+            ("Accuse", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT * 3 - BUTTON_MARGIN * 3 - 200)),
+            ("View Cards", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT * 2 - BUTTON_MARGIN * 2 - 200)),
+            ("End Turn", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT - BUTTON_MARGIN - 200)),
         ]
 
     def game_board(self):
@@ -68,6 +69,22 @@ class Game:
             button_rect = pygame.Rect(button_pos, (BUTTON_WIDTH, BUTTON_HEIGHT))
             pygame.draw.rect(self.screen, (100, 100, 100), button_rect)
             text_surface = self.font.render(button_text, True, (255, 255, 255))
+            text_rect = text_surface.get_rect(center=button_rect.center)
+            self.screen.blit(text_surface, text_rect)
+
+    def disable_buttons(self):
+        for button_text, button_pos in self.buttons:
+            button_rect = pygame.Rect(button_pos, (BUTTON_WIDTH, BUTTON_HEIGHT))
+            pygame.draw.rect(self.screen, (100, 100, 100), button_rect)  # Gray out the button
+            text_surface = self.font.render(button_text, True, (150, 150, 150))  # Dim the text color
+            text_rect = text_surface.get_rect(center=button_rect.center)
+            self.screen.blit(text_surface, text_rect)
+
+    def enable_buttons(self):
+        for button_text, button_pos in self.buttons:
+            button_rect = pygame.Rect(button_pos, (BUTTON_WIDTH, BUTTON_HEIGHT))
+            pygame.draw.rect(self.screen, (100, 100, 100), button_rect)  # Restore the button color
+            text_surface = self.font.render(button_text, True, (255, 255, 255))  # Restore the text color
             text_rect = text_surface.get_rect(center=button_rect.center)
             self.screen.blit(text_surface, text_rect)
 
@@ -150,6 +167,11 @@ class Game:
 
             self.draw_buttons()  # Draw buttons
 
+            if self.buttons_enabled:
+                self.enable_buttons()
+            else:
+                self.disable_buttons()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -193,6 +215,31 @@ class Game:
                         self.clicked_left = False
                     else:
                         x_inc -= 0
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    for button_text, button_pos in self.buttons:
+                        button_rect = pygame.Rect(button_pos, (BUTTON_WIDTH, BUTTON_HEIGHT))
+                        if button_rect.collidepoint(mouse_pos):
+                            if button_text == "Move" and self.buttons_enabled:
+                                # Call move function
+                                print("Move")
+                                pass
+                            elif button_text == "Suggest" and self.buttons_enabled:
+                                # Call suggest function
+                                print("Suggest")
+                                pass
+                            elif button_text == "Accuse" and self.buttons_enabled:
+                                # Call accuse function
+                                print("Accuse")
+                                pass
+                            elif button_text == "View Cards" and self.buttons_enabled:
+                                # Call view cards function
+                                print("View Cards")
+                                pass
+                            elif button_text == "End Turn" and self.buttons_enabled:
+                                # Call end turn function
+                                print("End Turn")
+                                pass
             pygame.display.update()
             clock.tick(60)
         return running

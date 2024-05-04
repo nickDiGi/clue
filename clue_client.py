@@ -138,8 +138,6 @@ def show_lobby_menu(lobby_roster):
 # Update the positions of items and characters on the board
 def update_game_board(new_player_info):
     global player_info
-    global show_game_board
-
     lobby_screen.running = False
 
     # Text based version
@@ -170,6 +168,7 @@ def update_game_board(new_player_info):
 # Create and display GUI elements for the pop-up that appears when it is your turn to move
 def show_your_turn_popup(player_state):
     # TODO: Connect GUI here
+    game_board.buttons_enabled = True
 
     # Text based version
     while not turn_ended:
@@ -366,6 +365,7 @@ def choose_cards(choose_room):
 # Handle collecting user input for a suggestion
 def handle_suggest(player_state):
     global turn_ended
+    global game_board
 
     # If the player is in a room (not a hallway), give them the option to suggest
     if player_state.get_position().value >= HALLWAY_LIMIT:
@@ -380,11 +380,13 @@ def handle_suggest(player_state):
             chosen_cards,
             player_state,
         )
+        game_board.buttons_enabled = False
         send_message(suggest_action_message)
 
 
 # Handle collecting user input for the accusation and sending it to the server
 def handle_disprove(active_suggestion_cards, suggesting_player, player_state):
+    global game_board
 
     # If you are asked to disprove your own suggestion, that means no one else could
     if suggesting_player.get_name() == player_state.get_name():
@@ -396,6 +398,7 @@ def handle_disprove(active_suggestion_cards, suggesting_player, player_state):
         game_state_update = clue_messaging.Message(
             clue_messaging.Message_Types.GAME_STATE_UPDATE, game_id, None, player_state
         )
+        game_board.buttons_enabled = False
         send_message(game_state_update)
     else:
         print(
@@ -418,6 +421,7 @@ def handle_disprove(active_suggestion_cards, suggesting_player, player_state):
                 None,
                 player_state,
             )
+            game_board.buttons_enabled = False
             send_message(disprove_suggestion_message)
         else:
             cards = ", ".join(card.name for card in common_items)
@@ -436,7 +440,8 @@ def handle_disprove(active_suggestion_cards, suggesting_player, player_state):
                         chosen_card,
                         player_state,
                     )
-                    send_message(disprove_suggestion_message)
+                    game_board.buttons_enabled = False
+                    send_message(disprove_suggestion_message)             
 
 
 # Handle collecting user input for the accusation and sending it to the server
@@ -462,6 +467,7 @@ def handle_show_card(sender, card, player_state):
 # Handle collecting user input for the accusation and sending it to the server
 def handle_accuse(player_state):
     global turn_ended
+    global game_board
 
     chosen_cards = choose_cards(True)
     turn_ended = True
@@ -471,16 +477,19 @@ def handle_accuse(player_state):
         chosen_cards,
         player_state,
     )
+    game_board.buttons_enabled = False
     send_message(accusation_action_message)
 
 
 def end_turn(player_state):
     global turn_ended
+    global game_board
 
     turn_ended = True
     game_state_update = clue_messaging.Message(
         clue_messaging.Message_Types.GAME_STATE_UPDATE, game_id, None, player_state
     )
+    game_board.buttons_enabled = False
     send_message(game_state_update)
 
 
@@ -654,7 +663,7 @@ def main():
 
     while lobby_screen.running:
         lobby_screen.menu()
-        
+
     game_board = Game(screen, font, player_name, character_choice, game_id)
     game_board.menu()
 

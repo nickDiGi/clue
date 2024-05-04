@@ -46,6 +46,12 @@ class Room(Enum):
     HALLWAY_BILR_HALL = 32
     HALLWAY_STDY_HALL = 33
 
+def match_suspect(string):
+    for suspect in Suspect:
+        if string == suspect.name:
+            return suspect
+    return None
+
 '''
 Player
 '''
@@ -53,7 +59,7 @@ class Player:
     def __init__(self, name, address, character):
         self.name = name
         self.address = address
-        self.character = character
+        self.character = match_suspect(character)
         self.cards = []
         self.turn_order_number = None
         self.position = None

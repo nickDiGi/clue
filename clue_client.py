@@ -230,17 +230,17 @@ Functions for handling user actions
 """
 
 
-def create_game(player_name):
+def create_game(player_name, character):
     create_game_message = clue_messaging.Message(
-        clue_messaging.Message_Types.CREATE_GAME, player_name, None, None
+        clue_messaging.Message_Types.CREATE_GAME, player_name, None, character
     )
     connect_to_server()
     send_message(create_game_message)
 
 
-def join_game(player_name, game_id):
+def join_game(player_name, game_id, character):
     join_game_message = clue_messaging.Message(
-        clue_messaging.Message_Types.JOIN_GAME, player_name, int(game_id), None
+        clue_messaging.Message_Types.JOIN_GAME, player_name, int(game_id), character
     )
     connect_to_server()
     send_message(join_game_message)
@@ -619,6 +619,7 @@ Main
 def main():
     global lobby_screen
     global game_board
+    global game_id
 
     pygame.init()
     player_name = ""
@@ -645,15 +646,16 @@ def main():
 
     # TODO: Fix threading to stop lag
     if game_id == -1:
-        message_thread = threading.Thread(target=create_game(player_name))
+        message_thread = threading.Thread(target=create_game(player_name, character_choice))
         message_thread.start()
     else:
-        message_thread = threading.Thread(target=join_game(player_name, game_id))
+        message_thread = threading.Thread(target=join_game(player_name, game_id, character_choice))
         message_thread.start()
 
-    game_board = Game(screen, font, player_name, character_choice, game_id)
     while lobby_screen.running:
         lobby_screen.menu()
+        
+    game_board = Game(screen, font, player_name, character_choice, game_id)
     game_board.menu()
 
     # Sleep while waiting for incoming messages

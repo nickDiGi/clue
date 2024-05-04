@@ -17,8 +17,9 @@ def create_new_game(message, addr):
 
     print('\nCREATE GAME MESSAGE RECEIVED:')
     print('Creating Player:', message.sender_id)
+    print('Chosen Character:', message.player_state_data)
 
-    game = clue_game_logic.Game_Session(message.sender_id, addr)
+    game = clue_game_logic.Game_Session(message.sender_id, addr, message.player_state_data)
     # Add game to the collection of games, with it's ID as it's key
     ongoing_games[game.get_id()] = game
     print("Added player " + message.sender_id + " to game with lobby ID " + str(game.get_id()))
@@ -42,11 +43,12 @@ def join_game(message, addr):
     print('\nJOIN GAME MESSAGE RECEIVED:')
     print('Joining Player:', message.sender_id)
     print('Game ID to Join:', message.game_state_data)
+    print('Chosen Character:', message.player_state_data)
 
     try:
         game = ongoing_games[message.game_state_data]
         print("Game Found Matching Given ID")
-        game.add_player(message.sender_id, addr)
+        game.add_player(message.sender_id, addr, message.player_state_data)
         print("Added player " + message.sender_id + " to game with lobby ID " + str(game.get_id()))
         player_names = []
         for player in game.get_players():
@@ -72,8 +74,7 @@ def join_game(message, addr):
             board_info = []
             for player in players:
                 #board_info = board_info + ((player.get_name() + "(" + str(player.get_character()) + ") is currently in the " + str(player.get_position()) + "\n"))
-                stripped_player = clue_game_logic.Player(player.get_name(), None, [])
-                stripped_player.set_character(player.get_character())
+                stripped_player = clue_game_logic.Player(player.get_name(), None, player.get_character())
                 stripped_player.set_position(player.get_position())
                 board_info.append(stripped_player)
 
@@ -142,8 +143,7 @@ def update_game_state(message, next_turn):
 
     board_info = []
     for player in players:
-        stripped_player = clue_game_logic.Player(player.get_name(), None, [])
-        stripped_player.set_character(player.get_character())
+        stripped_player = clue_game_logic.Player(player.get_name(), None, player.get_character())
         stripped_player.set_position(player.get_position())
         stripped_player.set_lost_game(player.get_lost_game())
         board_info.append(stripped_player)
@@ -227,8 +227,7 @@ def handle_disprove_action(message):
 
         board_info = []
         for player in players:
-            stripped_player = clue_game_logic.Player(player.get_name(), None, [])
-            stripped_player.set_character(player.get_character())
+            stripped_player = clue_game_logic.Player(player.get_name(), None, player.get_character())
             stripped_player.set_position(player.get_position())
             stripped_player.set_lost_game(player.get_lost_game())
             board_info.append(stripped_player)

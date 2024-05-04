@@ -11,7 +11,7 @@ details_font = pygame.font.SysFont(None, 28)
 # counter code, button text - https://www.youtube.com/watch?v=jyrP0dDGqgY
 
 # Button constants
-BUTTON_WIDTH = 120
+BUTTON_WIDTH = 170
 BUTTON_HEIGHT = 30
 BUTTON_MARGIN = 10
 
@@ -87,6 +87,14 @@ class Game:
             text_surface = self.font.render(button_text, True, (255, 255, 255))  # Restore the text color
             text_rect = text_surface.get_rect(center=button_rect.center)
             self.screen.blit(text_surface, text_rect)
+
+    def create_additional_buttons(self, button_names):
+        additional_buttons = []
+        for idx, name in enumerate(button_names):
+            x = WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 100  # Move 100 pixels to the left
+            y = HEIGHT - BUTTON_HEIGHT * (len(self.buttons) + idx + 1) - BUTTON_MARGIN * (len(self.buttons) + idx + 1)
+            additional_buttons.append((name, (x, y)))
+        self.buttons.extend(additional_buttons)
 
     def valid_grid_locations(self):
         valid_grid_locations = []
@@ -240,6 +248,9 @@ class Game:
                                 # Call end turn function
                                 print("End Turn")
                                 pass
+                            else:
+                                print(f"Clicked on button: {button_text}")  # Print button name
+
             pygame.display.update()
             clock.tick(60)
         return running

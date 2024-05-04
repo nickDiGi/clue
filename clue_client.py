@@ -249,6 +249,7 @@ def join_game(player_name, game_id, character):
 def handle_move(player_state):
     global turn_ended
     global moved_this_turn
+    global game_board
 
     if moved_this_turn:
         print("You have already moved this turn.")
@@ -261,32 +262,40 @@ def handle_move(player_state):
 
         # TODO: Add secret passages
         choices = {}
+        rooms = []
         index = 1
         adjacent_cord = (x - 1, y)
+
         room_name = get_key_by_value(room_coordinates, adjacent_cord)
         # Get the possible rooms the player can move to
         if room_name is not None:
             print(str(index) + " : " + room_name.name)
             choices[index] = room_name
+            rooms.append(room_name.name)
             index = index + 1
         adjacent_cord = (x + 1, y)
         room_name = get_key_by_value(room_coordinates, adjacent_cord)
         if room_name is not None:
             print(str(index) + " : " + room_name.name)
             choices[index] = room_name
+            rooms.append(room_name.name)
             index = index + 1
         adjacent_cord = (x, y - 1)
         room_name = get_key_by_value(room_coordinates, adjacent_cord)
         if room_name is not None:
             print(str(index) + " : " + room_name.name)
             choices[index] = room_name
+            rooms.append(room_name.name)
             index = index + 1
         adjacent_cord = (x, y + 1)
         room_name = get_key_by_value(room_coordinates, adjacent_cord)
         if room_name is not None:
             print(str(index) + " : " + room_name.name)
             choices[index] = room_name
+            rooms.append(room_name.name)
             index = index + 1
+
+        game_board.create_additional_buttons(rooms)
 
         # Get the players choice of move
         new_position = None

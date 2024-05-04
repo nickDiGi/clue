@@ -135,25 +135,12 @@ def show_lobby_menu(lobby_roster):
     # End text based version
 
 
-# Create and display a generic loading page with a message
-def show_loading_screen(message):
-    # TODO: Connect GUI here
-    pass
-
-
-# Create and display GUI elements for the game board
-# Should include player/item positions and the players cards
-def show_game_board():
-    # TODO: Connect GUI here
-    pass
-
-
 # Update the positions of items and characters on the board
 def update_game_board(new_player_info):
     global player_info
+    global show_game_board
 
     lobby_screen.running = False
-    game_board.menu()
 
     # Text based version
     if not player_info:
@@ -665,7 +652,9 @@ def main():
         message_thread.start()
 
     game_board = Game(screen, font, player_name, character_choice, game_id)
-    lobby_screen.menu()
+    while lobby_screen.running:
+        lobby_screen.menu()
+    game_board.menu()
 
     # Sleep while waiting for incoming messages
     while True:

@@ -166,20 +166,20 @@ def update_game_board(new_player_info):
 
 
 # Create and display GUI elements for the pop-up that appears when it is your turn to move
-def show_your_turn_popup(player_state):
+def show_your_turn_popup():
     # TODO: Connect GUI here
     game_board.buttons_enabled = True
 
     # Text based version
-    while not turn_ended:
-        print("\nITS YOUR TURN!")
-        print("1. Move")
-        print("2. Suggest")
-        print("3. Accuse")
-        print("4. View Cards")
-        print("5. End Turn")
-        action = input("Enter the number of the action you would like to take: ")
-        action_options.get(action, show_error_popup)(player_state)
+    #while not turn_ended:
+    print("\nITS YOUR TURN!")
+        #print("1. Move")
+        #print("2. Suggest")
+        #print("3. Accuse")
+        #print("4. View Cards")
+        #print("5. End Turn")
+        #action = input("Enter the number of the action you would like to take: ")
+        #action_options.get(action, show_error_popup)(player_state)
     # End text based version
 
 
@@ -196,7 +196,7 @@ def show_game_over_popup():
 
 
 # Create and display GUI elements for an error message pop-up
-def show_error_popup(player_state):
+def show_error_popup():
     # TODO: Connect GUI here
 
     # Text based version
@@ -206,9 +206,15 @@ def show_error_popup(player_state):
 
 # Display the players cards
 def show_cards(player_state):
-    cards = ", ".join(card.name for card in player_state.get_cards())
-    # TODO: Connect GUI here
+    global game_board
 
+    card_array = []
+    for card in player_state.get_cards():
+        card_array.append(card.name)
+    game_board.remove_extra_buttons()
+    game_board.create_additional_buttons(card_array)
+
+    cards = ", ".join(card.name for card in player_state.get_cards())
     # Text based version
     print("Your cards are: " + cards)
     # End text based version
@@ -246,10 +252,13 @@ def join_game(player_name, game_id, character):
 
 
 # Process where the player can move and present their options for moving
-def handle_move(player_state):
+def handle_move():
     global turn_ended
     global moved_this_turn
     global game_board
+    global player_state
+
+    print("In Handle Move")
 
     if moved_this_turn:
         print("You have already moved this turn.")
@@ -261,7 +270,7 @@ def handle_move(player_state):
         y = room_coordinates[position][1]
 
         # TODO: Add secret passages
-        choices = {}
+        #choices = {}
         rooms = []
         index = 1
         adjacent_cord = (x - 1, y)
@@ -270,64 +279,86 @@ def handle_move(player_state):
         # Get the possible rooms the player can move to
         if room_name is not None:
             print(str(index) + " : " + room_name.name)
-            choices[index] = room_name
+            #choices[index] = room_name
             rooms.append(room_name.name)
             index = index + 1
         adjacent_cord = (x + 1, y)
         room_name = get_key_by_value(room_coordinates, adjacent_cord)
         if room_name is not None:
             print(str(index) + " : " + room_name.name)
-            choices[index] = room_name
+            #choices[index] = room_name
             rooms.append(room_name.name)
             index = index + 1
         adjacent_cord = (x, y - 1)
         room_name = get_key_by_value(room_coordinates, adjacent_cord)
         if room_name is not None:
             print(str(index) + " : " + room_name.name)
-            choices[index] = room_name
+            #choices[index] = room_name
             rooms.append(room_name.name)
             index = index + 1
         adjacent_cord = (x, y + 1)
         room_name = get_key_by_value(room_coordinates, adjacent_cord)
         if room_name is not None:
             print(str(index) + " : " + room_name.name)
-            choices[index] = room_name
+            #choices[index] = room_name
             rooms.append(room_name.name)
             index = index + 1
 
+        game_board.remove_extra_buttons()
         game_board.create_additional_buttons(rooms)
 
+        # TEXT BASED VERSION BELOW
         # Get the players choice of move
-        new_position = None
-        while new_position is None:
-            given_position = input(
-                "Enter the number of the room where would you like to move: "
-            )
-            if choices[int(given_position)] in clue_game_logic.Room:
-                new_position = choices[int(given_position)]
-                for player in player_info:
-                    # Check if the room is a hallway, and if another player is blocking it
-                    if (
-                        player.get_position() == new_position
-                        and new_position.value >= HALLWAY_LIMIT
-                    ):
-                        print("That position is already occupied! try again.")
-                        new_position = None
-                        break
-            else:
-                print("That is not a valid room, try again.")
-        moved_this_turn = True
+        #new_position = None
+        #while new_position is None:
+        #    given_position = input(
+        #        "Enter the number of the room where would you like to move: "
+        #    )
+        #    if choices[int(given_position)] in clue_game_logic.Room:
+        #        new_position = choices[int(given_position)]
+        #        for player in player_info:
+        #            # Check if the room is a hallway, and if another player is blocking it
+        #            if (
+        #                player.get_position() == new_position
+        #                and new_position.value >= HALLWAY_LIMIT
+        #            ):
+        #                print("That position is already occupied! try again.")
+        #                new_position = None
+        #                break
+        #    else:
+        #        print("That is not a valid room, try again.")
+        #moved_this_turn = True
 
-        player_state.set_position(new_position)
+def update_player_pos(given_position):
+        print("Updating Player Position")
+        room = room_mapping.get(given_position)
+        player_state.set_position(room)
+        game_board.remove_extra_buttons()
 
 
 # Let the player choose a suspect, weapon, and room
 def choose_cards(choose_room):
+    global game_board
+
     suspect_list = list(clue_game_logic.Suspect)
-    suspects = ", ".join(suspect.name for suspect in suspect_list)
+    suspect_array = []
+    for suspect in suspect_list:
+        suspect_array.append(suspect.name)
     weapon_list = list(clue_game_logic.Weapon)
-    weapons = ", ".join(weapon.name for weapon in weapon_list)
+    weapon_array = []
+    for weapon in weapon_list:
+        weapon_array.append(weapon.name)
     room_list = [room for room in clue_game_logic.Room if room.value < 22]
+    room_array = []
+    for room in room_list:
+        room_array.append(room.name)
+
+    game_board.remove_extra_buttons()
+    game_board.create_additional_buttons(suspect_array)
+
+
+    suspects = ", ".join(suspect.name for suspect in suspect_list)
+    weapons = ", ".join(weapon.name for weapon in weapon_list)
     rooms = ", ".join(room.name for room in room_list)
 
     chosen_suspect = ""
@@ -576,6 +607,7 @@ def process_message(message):
     global player_info
     global turn_ended
     global moved_this_turn
+    global player_state
 
     try:
         # Show players the list of other players in the lobby, and the lobby ID
@@ -585,6 +617,7 @@ def process_message(message):
 
         # Update the positions of players on the board
         elif message.message_type == clue_messaging.Message_Types.GAME_STATE_UPDATE:
+            print("Calling Update Game Board")
             update_game_board(message.game_state_data)
 
         # Present the player with their possible actions, and process actions taken
@@ -593,7 +626,8 @@ def process_message(message):
         ):
             turn_ended = False
             moved_this_turn = False
-            show_your_turn_popup(message.player_state_data)
+            player_state = message.player_state_data
+            show_your_turn_popup()
 
         # Present the player with their options for disproving an active suggestion
         elif (
@@ -674,11 +708,15 @@ def main():
         lobby_screen.menu()
 
     game_board = Game(screen, font, player_name, character_choice, game_id)
-    game_board.menu()
 
     # Sleep while waiting for incoming messages
     while True:
-        time.sleep(5)
+        action = game_board.menu()
+        print(action)
+        if action in action_options:
+            action_options[action]()
+        else:
+            print("Unknown Action")
 
 
 if __name__ == "__main__":

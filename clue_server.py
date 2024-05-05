@@ -74,7 +74,7 @@ def join_game(message, addr):
             board_info = []
             for player in players:
                 #board_info = board_info + ((player.get_name() + "(" + str(player.get_character()) + ") is currently in the " + str(player.get_position()) + "\n"))
-                stripped_player = clue_game_logic.Player(player.get_name(), None, player.get_character())
+                stripped_player = clue_game_logic.Player(player.get_name(), None, player.get_character().name)
                 stripped_player.set_position(player.get_position())
                 board_info.append(stripped_player)
 
@@ -143,7 +143,7 @@ def update_game_state(message, next_turn):
 
     board_info = []
     for player in players:
-        stripped_player = clue_game_logic.Player(player.get_name(), None, player.get_character())
+        stripped_player = clue_game_logic.Player(player.get_name(), None, player.get_character().name)
         stripped_player.set_position(player.get_position())
         stripped_player.set_lost_game(player.get_lost_game())
         board_info.append(stripped_player)
@@ -227,7 +227,7 @@ def handle_disprove_action(message):
 
         board_info = []
         for player in players:
-            stripped_player = clue_game_logic.Player(player.get_name(), None, player.get_character())
+            stripped_player = clue_game_logic.Player(player.get_name(), None, player.get_character().name)
             stripped_player.set_position(player.get_position())
             stripped_player.set_lost_game(player.get_lost_game())
             board_info.append(stripped_player)

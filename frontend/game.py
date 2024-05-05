@@ -1,6 +1,7 @@
 import pygame, sys
 from frontend.character import Character
 from frontend.constants import *
+import clue_game_logic
 
 # from client import main
 
@@ -40,6 +41,13 @@ class Game:
             ("View Cards", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT * 2 - BUTTON_MARGIN * 2 - 200)),
             ("End Turn", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT - BUTTON_MARGIN - 200)),
         ]
+
+    def get_room_names(self):
+        room_list = list(clue_game_logic.Room)
+        room_array = []
+        for room in room_list:
+            room_array.append(room.name)
+        return room_array
 
     def game_board(self):
         block_size = 50
@@ -95,6 +103,9 @@ class Game:
             y = HEIGHT - BUTTON_HEIGHT * (len(self.buttons) + idx + 1) - BUTTON_MARGIN * (len(self.buttons) + idx + 1)
             additional_buttons.append((name, (x, y)))
         self.buttons.extend(additional_buttons)
+
+    def remove_extra_buttons(self):
+        self.buttons = [button for button in self.buttons if button[0] in ["Move", "Suggest", "Accuse", "View Cards", "End Turn"]]
 
     def valid_grid_locations(self):
         valid_grid_locations = []
@@ -231,23 +242,26 @@ class Game:
                             if button_text == "Move" and self.buttons_enabled:
                                 # Call move function
                                 print("Move")
-                                pass
+                                self.remove_extra_buttons()
+                                return "1"
                             elif button_text == "Suggest" and self.buttons_enabled:
                                 # Call suggest function
                                 print("Suggest")
-                                pass
+                                self.remove_extra_buttons()
                             elif button_text == "Accuse" and self.buttons_enabled:
                                 # Call accuse function
                                 print("Accuse")
-                                pass
+                                self.remove_extra_buttons()
                             elif button_text == "View Cards" and self.buttons_enabled:
                                 # Call view cards function
                                 print("View Cards")
-                                pass
+                                self.remove_extra_buttons()
                             elif button_text == "End Turn" and self.buttons_enabled:
                                 # Call end turn function
                                 print("End Turn")
-                                pass
+                                self.remove_extra_buttons()
+                            elif button_text in self.get_room_names():
+                                return button_text
                             else:
                                 print(f"Clicked on button: {button_text}")  # Print button name
 

@@ -27,7 +27,7 @@ def create_new_game(message, addr):
     for player in game.get_players():
             player_names.append(player.get_name())
     print("Players now the lobby: " + str(player_names))
-    create_game_response =  clue_messaging.Message(clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE, game.get_id(), player_names, None)
+    create_game_response =  clue_messaging.Message(clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE, game.get_id(), game.get_players(), None)
     # TODO: Replace port stuff with with a permanent solution
     index = 0
     for player in game.get_players():
@@ -54,7 +54,7 @@ def join_game(message, addr):
         for player in game.get_players():
                 player_names.append(player.get_name())
         print("Players now the lobby: " + str(player_names))
-        create_game_response =  clue_messaging.Message(clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE, game.get_id(), player_names, None)
+        create_game_response =  clue_messaging.Message(clue_messaging.Message_Types.LOBBY_ROSTER_UPDATE, game.get_id(), game.get_players(), None)
         # TODO: Replace port stuff with with a permanent solution
         index = 0
         for player in game.get_players():

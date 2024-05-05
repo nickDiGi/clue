@@ -9,10 +9,10 @@ import clue_game_logic
 
 import pygame
 
-from frontend.lobby import Lobby
+from frontend.lobby import LobbyScreen
 from frontend.game import Game
 from frontend.client import MainMenu
-from frontend.test_lobby import LobbyScreen
+from frontend.lobby import LobbyScreen
 from frontend.choose_character import ChooseCharacter
 from frontend.constants import *
 
@@ -340,10 +340,12 @@ def handle_move():
         #moved_this_turn = True
 
 def update_player_pos(given_position):
-        print("Updating Player Position")
-        room = room_mapping.get(given_position)
-        player_state.set_position(room)
-        game_board.remove_extra_buttons()
+    global player_state
+
+    print("Updating Player Position")
+    room = room_mapping.get(given_position)
+    player_state.set_position(room)
+    game_board.remove_extra_buttons()
 
 
 # Let the player choose a suspect, weapon, and room
@@ -446,7 +448,11 @@ def handle_accuse(chosen_room, chosen_suspect, chosen_weapon):
             player_state,
         )
         game_board.buttons_enabled = False
+        game_board.remove_extra_buttons()
         send_message(accusation_action_message)
+
+def handle_suggest_noargs():
+    handle_suggest(None, None)
 
 # Handle collecting user input for a suggestion
 def handle_suggest(chosen_suspect, chosen_weapon):
@@ -455,38 +461,63 @@ def handle_suggest(chosen_suspect, chosen_weapon):
     global player_state
     global current_action_type
 
+    print("In Handle Suggest")
     current_action_type = 2
 
     if chosen_suspect is None:
         choose_cards("SUSPECT")
     elif chosen_weapon is None:
         choose_cards("WEAPON")
-
-    chosen_cards = [
-        suspect_mapping.get(chosen_suspect),
-        weapon_mapping.get(chosen_weapon),
-    ]
-
-    # If the player is in a room (not a hallway), give them the option to suggest
-    if player_state.get_position().value >= HALLWAY_LIMIT:
-        print("You cannot make a suggestion from a hallway.")
     else:
-        chosen_cards.append(player_state.get_position())
-        turn_ended = True
-        current_action_type = -1
-        suggest_action_message = clue_messaging.Message(
-            clue_messaging.Message_Types.SUGGESTION_ACTION,
-            game_id,
-            chosen_cards,
-            player_state,
-        )
-        game_board.buttons_enabled = False
-        send_message(suggest_action_message)
+        print("Got a weapon and suspect")
+        chosen_cards = [
+            suspect_mapping.get(chosen_suspect),
+            weapon_mapping.get(chosen_weapon),
+        ]
 
+        # If the player is in a room (not a hallway), give them the option to suggest
+        if player_state.get_position().value >= HALLWAY_LIMIT:
+            print("You cannot make a suggestion from a hallway.")
+        else:
+            chosen_cards.append(player_state.get_position())
+            turn_ended = True
+            current_action_type = -1
+            suggest_action_message = clue_messaging.Message(
+                clue_messaging.Message_Types.SUGGESTION_ACTION,
+                game_id,
+                chosen_cards,
+                player_state,
+            )
+            game_board.buttons_enabled = False
+            game_board.remove_extra_buttons()
+            send_message(suggest_action_message)
+
+def handle_disprove_create_msg(chosen_card):
+    global player_state
+    global current_action_type
+    global game_board
+
+    game_board.remove_extra_buttons()
+    game_board.disable_buttons()
+
+    disprove_suggestion_message = clue_messaging.Message(
+        clue_messaging.Message_Types.DISPROVE_SUGGESTION_ACTION,
+        game_id,
+        chosen_card,
+        player_state,
+    )
+    game_board.buttons_enabled = False
+    current_action_type = -1
+    send_message(disprove_suggestion_message) 
 
 # Handle collecting user input for the accusation and sending it to the server
-def handle_disprove(active_suggestion_cards, suggesting_player, player_state):
+def handle_disprove(active_suggestion_cards, suggesting_player):
     global game_board
+    global player_state
+    global current_action_type
+
+    current_action_type = 6
+    print("In Handle Disprove")
 
     # If you are asked to disprove your own suggestion, that means no one else could
     if suggesting_player.get_name() == player_state.get_name():
@@ -526,22 +557,30 @@ def handle_disprove(active_suggestion_cards, suggesting_player, player_state):
         else:
             cards = ", ".join(card.name for card in common_items)
             chosen_card = ""
-            while not chosen_card:
-                print("You can disprove the suggestion using you card(s): " + cards)
-                chosen_card = input("Enter the name of the card you want to show: ")
-                chosen_card = chosen_card.upper()
-                if chosen_card not in [card.name for card in active_suggestion_cards]:
-                    chosen_card = ""
-                    print("Invalid card, try again.")
-                else:
-                    disprove_suggestion_message = clue_messaging.Message(
-                        clue_messaging.Message_Types.DISPROVE_SUGGESTION_ACTION,
-                        game_id,
-                        chosen_card,
-                        player_state,
-                    )
-                    game_board.buttons_enabled = False
-                    send_message(disprove_suggestion_message)             
+            #while not chosen_card:
+            print("You can disprove the suggestion using you card(s): " + cards)
+
+            #chosen_card = input("Enter the name of the card you want to show: ")
+            #chosen_card = chosen_card.upper()
+
+            game_board.buttons_enabled = True
+            card_array = []
+            for card in common_items:
+                card_array.append(card.name)
+            game_board.create_additional_buttons(card_array)
+
+            #if chosen_card not in [card.name for card in active_suggestion_cards]:
+            #    chosen_card = ""
+            #    print("Invalid card, try again.")
+            #else:
+            #    disprove_suggestion_message = clue_messaging.Message(
+            #        clue_messaging.Message_Types.DISPROVE_SUGGESTION_ACTION,
+            #        game_id,
+            #        chosen_card,
+            #        player_state,
+            #    )
+            #    game_board.buttons_enabled = False
+            #    send_message(disprove_suggestion_message)             
 
 
 # Handle collecting user input for the accusation and sending it to the server
@@ -582,7 +621,7 @@ def end_turn():
 # Maps the above functions to a menu number
 action_options = {
     "1": handle_move,
-    "2": handle_suggest,
+    "2": handle_suggest_noargs,
     "3": handle_accuse_noargs,
     "4": show_cards,
     "5": end_turn,
@@ -680,8 +719,9 @@ def process_message(message):
             message.message_type
             == clue_messaging.Message_Types.DISPROVE_SUGGESTION_ACTION
         ):
+            player_state = message.player_state_data
             handle_disprove(
-                message.game_state_data, message.sender_id, message.player_state_data
+                message.game_state_data, message.sender_id
             )
 
         # Show the player the card presented by the other player
@@ -774,23 +814,40 @@ def main():
             elif current_action_type == 3:
                 current_room_selection = action
                 handle_accuse(current_room_selection, None, None)
+            elif current_action_type == 6:
+                card_selection = action
+                handle_disprove_create_msg(card_selection)
+            else:
+                print("Given room does not correspond with an ongoing action")
         elif action in suspect_mapping:
             print("It is a suspect!")
-            if current_action_type == 3:
+            if current_action_type == 2:
+                current_suspect_selection = action
+                handle_suggest(current_suspect_selection, None)
+            elif current_action_type == 3:
                 current_suspect_selection = action
                 handle_accuse(current_room_selection, current_suspect_selection, None)
+            elif current_action_type == 6:
+                card_selection = action
+                handle_disprove_create_msg(card_selection)
             else:
                 print("Given suspect does not correspond with an ongoing action")
         elif action in weapon_mapping:
             print("It is a weapon!")
-            if current_action_type == 3:
+            if current_action_type == 2:
+                current_weapon_selection = action
+                handle_suggest(current_suspect_selection, current_weapon_selection)
+            elif current_action_type == 3:
                 current_weapon_selection = action
                 handle_accuse(current_room_selection, current_suspect_selection, current_weapon_selection)
                 current_room_selection = None
                 current_suspect_selection = None
                 current_weapon_selection = None
+            elif current_action_type == 6:
+                card_selection = action
+                handle_disprove_create_msg(card_selection)
             else:
-                print("Given suspect does not correspond with an ongoing action")
+                print("Given weapon does not correspond with an ongoing action")
         else:
             print("Unknown Action")
 

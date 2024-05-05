@@ -21,7 +21,7 @@ class JoinGame:
         self.submit_btn = Button(self.screen, (WIDTH / 2) - 75, 220, "Submit")
 
     def gamename(self):
-        game_name_srf = label_font.render("Enter Gamename:", True, (255, 255, 255))
+        game_name_srf = label_font.render("Enter Game ID:", True, (255, 255, 255))
         self.screen.blit(game_name_srf, ((WIDTH / 2) - 200, 130))
 
     def gamename_input_rect(self):

@@ -35,7 +35,7 @@ class MainMenu:
             img_scaled = pygame.transform.scale(img, (WIDTH, HEIGHT))
             self.screen.blit(img_scaled, (0, 0))
             text_srf = title_font.render(
-                "Welcome to Clue-Less Digital", True, (255, 255, 255)
+                "CLUE", True, (255, 255, 255)
             )
             self.screen.blit(text_srf, ((WIDTH / 2) - (text_srf.get_width() / 2), 50))
             mx, my = pygame.mouse.get_pos()

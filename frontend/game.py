@@ -1,6 +1,7 @@
 import pygame, sys
 from frontend.character import Character
 from frontend.constants import *
+import clue_game_logic
 
 # from client import main
 
@@ -11,7 +12,7 @@ details_font = pygame.font.SysFont(None, 28)
 # counter code, button text - https://www.youtube.com/watch?v=jyrP0dDGqgY
 
 # Button constants
-BUTTON_WIDTH = 120
+BUTTON_WIDTH = 170
 BUTTON_HEIGHT = 30
 BUTTON_MARGIN = 10
 
@@ -28,17 +29,39 @@ class Game:
         self.clicked_right = False
         self.clicked_left = False
         self.valid_move = False
+        self.buttons_enabled = False
         self.pos = pygame.mouse.get_pos()
         self.board_pos = [0, 0]
 
-        # Button texts
+        # Buttons
         self.buttons = [
-            ("Move", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 5 - BUTTON_MARGIN * 5)),
-            ("Suggest", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 4 - BUTTON_MARGIN * 4)),
-            ("Accuse", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 3 - BUTTON_MARGIN * 3)),
-            ("View Cards", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT * 2 - BUTTON_MARGIN * 2)),
-            ("End Turn", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN, HEIGHT - BUTTON_HEIGHT - BUTTON_MARGIN)),
+            ("Move", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT * 5 - BUTTON_MARGIN * 5 - 200)),
+            ("Suggest", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT * 4 - BUTTON_MARGIN * 4 - 200)),
+            ("Accuse", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT * 3 - BUTTON_MARGIN * 3 - 200)),
+            ("View Cards", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT * 2 - BUTTON_MARGIN * 2 - 200)),
+            ("End Turn", (WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 300, HEIGHT - BUTTON_HEIGHT - BUTTON_MARGIN - 200)),
         ]
+
+    def get_room_names(self):
+        room_list = list(clue_game_logic.Room)
+        room_array = []
+        for room in room_list:
+            room_array.append(room.name)
+        return room_array
+    
+    def get_suspect_names(self):
+        suspect_list = list(clue_game_logic.Suspect)
+        suspect_array = []
+        for suspect in suspect_list:
+            suspect_array.append(suspect.name)
+        return suspect_array
+    
+    def get_weapon_names(self):
+        weapon_list = list(clue_game_logic.Weapon)
+        weapon_array = []
+        for weapon in weapon_list:
+            weapon_array.append(weapon.name)
+        return weapon_array
 
     def game_board(self):
         block_size = 50
@@ -70,6 +93,33 @@ class Game:
             text_surface = self.font.render(button_text, True, (255, 255, 255))
             text_rect = text_surface.get_rect(center=button_rect.center)
             self.screen.blit(text_surface, text_rect)
+
+    def disable_buttons(self):
+        for button_text, button_pos in self.buttons:
+            button_rect = pygame.Rect(button_pos, (BUTTON_WIDTH, BUTTON_HEIGHT))
+            pygame.draw.rect(self.screen, (100, 100, 100), button_rect)  # Gray out the button
+            text_surface = self.font.render(button_text, True, (150, 150, 150))  # Dim the text color
+            text_rect = text_surface.get_rect(center=button_rect.center)
+            self.screen.blit(text_surface, text_rect)
+
+    def enable_buttons(self):
+        for button_text, button_pos in self.buttons:
+            button_rect = pygame.Rect(button_pos, (BUTTON_WIDTH, BUTTON_HEIGHT))
+            pygame.draw.rect(self.screen, (100, 100, 100), button_rect)  # Restore the button color
+            text_surface = self.font.render(button_text, True, (255, 255, 255))  # Restore the text color
+            text_rect = text_surface.get_rect(center=button_rect.center)
+            self.screen.blit(text_surface, text_rect)
+
+    def create_additional_buttons(self, button_names):
+        additional_buttons = []
+        for idx, name in enumerate(button_names):
+            x = WIDTH - BUTTON_WIDTH - BUTTON_MARGIN - 100  # Move 100 pixels to the left
+            y = HEIGHT - BUTTON_HEIGHT * (len(self.buttons) + idx + 1) - BUTTON_MARGIN * (len(self.buttons) + idx + 1)
+            additional_buttons.append((name, (x, y)))
+        self.buttons.extend(additional_buttons)
+
+    def remove_extra_buttons(self):
+        self.buttons = [button for button in self.buttons if button[0] in ["Move", "Suggest", "Accuse", "View Cards", "End Turn"]]
 
     def valid_grid_locations(self):
         valid_grid_locations = []
@@ -150,6 +200,11 @@ class Game:
 
             self.draw_buttons()  # Draw buttons
 
+            if self.buttons_enabled:
+                self.enable_buttons()
+            else:
+                self.disable_buttons()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -193,6 +248,45 @@ class Game:
                         self.clicked_left = False
                     else:
                         x_inc -= 0
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    for button_text, button_pos in self.buttons:
+                        button_rect = pygame.Rect(button_pos, (BUTTON_WIDTH, BUTTON_HEIGHT))
+                        if button_rect.collidepoint(mouse_pos):
+                            if button_text == "Move" and self.buttons_enabled:
+                                # Call move function
+                                print("Move")
+                                self.remove_extra_buttons()
+                                return "1"
+                            elif button_text == "Suggest" and self.buttons_enabled:
+                                # Call suggest function
+                                print("Suggest")
+                                self.remove_extra_buttons()
+                                return "2"
+                            elif button_text == "Accuse" and self.buttons_enabled:
+                                # Call accuse function
+                                print("Accuse")
+                                self.remove_extra_buttons()
+                                return "3"
+                            elif button_text == "View Cards" and self.buttons_enabled:
+                                # Call view cards function
+                                print("View Cards")
+                                self.remove_extra_buttons()
+                                return "4"
+                            elif button_text == "End Turn" and self.buttons_enabled:
+                                # Call end turn function
+                                print("End Turn")
+                                self.remove_extra_buttons()
+                                return "5"
+                            elif button_text in self.get_room_names():
+                                return button_text
+                            elif button_text in self.get_suspect_names():
+                                return button_text
+                            elif button_text in self.get_weapon_names():
+                                return button_text
+                            else:
+                                print(f"Clicked on button: {button_text}")  # Print button name
+
             pygame.display.update()
             clock.tick(60)
         return running

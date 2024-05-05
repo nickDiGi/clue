@@ -67,14 +67,14 @@ class ChooseCharacter:
         for i in range(len(clue_characters)):
             for j in range(len(clue_characters[i])):
                 CharacterButton(
-                    self.screen, x, y, 160, 280, "", f"./assets/{clue_characters[i][j]}"
+                    self.screen, x, y, 280, 280, "", f"./assets/{clue_characters[i][j]}"
                 ).rect()
                 if (
                     CharacterButton(
                         self.screen,
                         x,
                         y,
-                        160,
+                        280,
                         280,
                         "",
                         f"./assets/{clue_characters[i][j]}",
@@ -86,10 +86,10 @@ class ChooseCharacter:
                         clue_characters[i][j].replace("_", " ").replace(".png", "")
                     )
                 CharacterButton(
-                    self.screen, x, y, 160, 280, "", f"./assets/{clue_characters[i][j]}"
+                    self.screen, x, y, 280, 280, "", f"./assets/{clue_characters[i][j]}"
                 ).rect_bg()
                 CharacterButton(
-                    self.screen, x, y, 160, 280, "", f"./assets/{clue_characters[i][j]}"
+                    self.screen, x, y, 280, 280, "", f"./assets/{clue_characters[i][j]}"
                 ).rect_img()
                 x += 250
             x = (WIDTH / 3) - 90

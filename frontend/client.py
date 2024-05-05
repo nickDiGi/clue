@@ -23,6 +23,7 @@ class MainMenu:
 
     def menu(self):
         running = True
+        click = False
         join_game = JoinGame(self.screen, self.font)
         create_game = CreateGame(self.screen, self.font)
 

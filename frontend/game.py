@@ -48,6 +48,20 @@ class Game:
         for room in room_list:
             room_array.append(room.name)
         return room_array
+    
+    def get_suspect_names(self):
+        suspect_list = list(clue_game_logic.Suspect)
+        suspect_array = []
+        for suspect in suspect_list:
+            suspect_array.append(suspect.name)
+        return suspect_array
+    
+    def get_weapon_names(self):
+        weapon_list = list(clue_game_logic.Weapon)
+        weapon_array = []
+        for weapon in weapon_list:
+            weapon_array.append(weapon.name)
+        return weapon_array
 
     def game_board(self):
         block_size = 50
@@ -248,19 +262,27 @@ class Game:
                                 # Call suggest function
                                 print("Suggest")
                                 self.remove_extra_buttons()
+                                return "2"
                             elif button_text == "Accuse" and self.buttons_enabled:
                                 # Call accuse function
                                 print("Accuse")
                                 self.remove_extra_buttons()
+                                return "3"
                             elif button_text == "View Cards" and self.buttons_enabled:
                                 # Call view cards function
                                 print("View Cards")
                                 self.remove_extra_buttons()
+                                return "4"
                             elif button_text == "End Turn" and self.buttons_enabled:
                                 # Call end turn function
                                 print("End Turn")
                                 self.remove_extra_buttons()
+                                return "5"
                             elif button_text in self.get_room_names():
+                                return button_text
+                            elif button_text in self.get_suspect_names():
+                                return button_text
+                            elif button_text in self.get_weapon_names():
                                 return button_text
                             else:
                                 print(f"Clicked on button: {button_text}")  # Print button name

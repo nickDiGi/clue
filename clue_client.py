@@ -205,19 +205,27 @@ def show_error_popup():
 
 
 # Display the players cards
-def show_cards(player_state):
+def show_cards():
     global game_board
+    global player_state
+    global current_action_type
 
-    card_array = []
-    for card in player_state.get_cards():
-        card_array.append(card.name)
-    game_board.remove_extra_buttons()
-    game_board.create_additional_buttons(card_array)
+    if current_action_type == 4:
+        game_board.remove_extra_buttons()
+        current_action_type = -1
+    else:
+        current_action_type = 4
 
-    cards = ", ".join(card.name for card in player_state.get_cards())
-    # Text based version
-    print("Your cards are: " + cards)
-    # End text based version
+        card_array = []
+        for card in player_state.get_cards():
+            card_array.append(card.name)
+        game_board.remove_extra_buttons()
+        game_board.create_additional_buttons(card_array)
+
+        cards = ", ".join(card.name for card in player_state.get_cards())
+        # Text based version
+        print("Your cards are: " + cards)
+        # End text based version
 
 
 # Make the action buttons selectable. To be called when it is the players turn
@@ -257,8 +265,10 @@ def handle_move():
     global moved_this_turn
     global game_board
     global player_state
+    global current_action_type
 
     print("In Handle Move")
+    current_action_type = 1
 
     if moved_this_turn:
         print("You have already moved this turn.")
@@ -337,7 +347,7 @@ def update_player_pos(given_position):
 
 
 # Let the player choose a suspect, weapon, and room
-def choose_cards(choose_room):
+def choose_cards(cards_to_show):
     global game_board
 
     suspect_list = list(clue_game_logic.Suspect)
@@ -354,66 +364,116 @@ def choose_cards(choose_room):
         room_array.append(room.name)
 
     game_board.remove_extra_buttons()
-    game_board.create_additional_buttons(suspect_array)
+    if cards_to_show == "ROOM":
+        game_board.create_additional_buttons(room_array)
+    elif cards_to_show == "SUSPECT":
+        game_board.create_additional_buttons(suspect_array)
+    elif cards_to_show == "WEAPON":
+        game_board.create_additional_buttons(weapon_array)
 
+    #suspects = ", ".join(suspect.name for suspect in suspect_list)
+    #weapons = ", ".join(weapon.name for weapon in weapon_list)
+    #rooms = ", ".join(room.name for room in room_list)
 
-    suspects = ", ".join(suspect.name for suspect in suspect_list)
-    weapons = ", ".join(weapon.name for weapon in weapon_list)
-    rooms = ", ".join(room.name for room in room_list)
+    #chosen_suspect = ""
+    #while not chosen_suspect:
+    #    print("The possible suspects are: " + suspects)
+    #    chosen_suspect = input("Enter the name of the suspect who did it: ")
+    #    chosen_suspect = chosen_suspect.upper()
+    #    if chosen_suspect not in [suspect.name for suspect in suspect_list]:
+    #        chosen_suspect = ""
+    #        print("Invalid suspect, try again.")
 
-    chosen_suspect = ""
-    while not chosen_suspect:
-        print("The possible suspects are: " + suspects)
-        chosen_suspect = input("Enter the name of the suspect who did it: ")
-        chosen_suspect = chosen_suspect.upper()
-        if chosen_suspect not in [suspect.name for suspect in suspect_list]:
-            chosen_suspect = ""
-            print("Invalid suspect, try again.")
+    #chosen_weapon = ""
+    #while not chosen_weapon:
+    #    print("The possible weapons are: " + weapons)
+    #    chosen_weapon = input("Enter the name of the weapon they used: ")
+    #    chosen_weapon = chosen_weapon.upper()
+    #    if chosen_weapon not in [weapon.name for weapon in weapon_list]:
+    #        chosen_weapon = ""
+    #        print("Invalid weapon, try again.")
 
-    chosen_weapon = ""
-    while not chosen_weapon:
-        print("The possible weapons are: " + weapons)
-        chosen_weapon = input("Enter the name of the weapon they used: ")
-        chosen_weapon = chosen_weapon.upper()
-        if chosen_weapon not in [weapon.name for weapon in weapon_list]:
-            chosen_weapon = ""
-            print("Invalid weapon, try again.")
+    #if choose_room:
+    #    chosen_room = ""
+    #    while not chosen_room:
+    #        print("The possible rooms are: " + rooms)
+    #        chosen_room = input("Enter the name of the room it was done in: ")
+    #        chosen_room = chosen_room.upper()
+    #        if chosen_room not in [room.name for room in room_list]:
+    #            chosen_room = ""
+    #            print("Invalid room, try again.")
+    #    chosen_cards = [
+    #        suspect_mapping.get(chosen_suspect),
+    #        weapon_mapping.get(chosen_weapon),
+    #        room_mapping.get(chosen_room),
+    #    ]
+    #else:
+    #    chosen_cards = [
+    #        suspect_mapping.get(chosen_suspect),
+    #        weapon_mapping.get(chosen_weapon),
+    #    ]
+    #return chosen_cards
+def handle_accuse_noargs():
+    handle_accuse(None, None, None)
 
-    if choose_room:
-        chosen_room = ""
-        while not chosen_room:
-            print("The possible rooms are: " + rooms)
-            chosen_room = input("Enter the name of the room it was done in: ")
-            chosen_room = chosen_room.upper()
-            if chosen_room not in [room.name for room in room_list]:
-                chosen_room = ""
-                print("Invalid room, try again.")
+# Handle collecting user input for the accusation and sending it to the server
+def handle_accuse(chosen_room, chosen_suspect, chosen_weapon):
+    global turn_ended
+    global game_board
+    global current_action_type
+
+    current_action_type = 3
+
+    if chosen_room is None:
+        choose_cards("ROOM")
+    elif chosen_suspect is None:
+        choose_cards("SUSPECT")
+    elif chosen_weapon is None:
+        choose_cards("WEAPON")
+    else:
         chosen_cards = [
             suspect_mapping.get(chosen_suspect),
             weapon_mapping.get(chosen_weapon),
             room_mapping.get(chosen_room),
         ]
-    else:
-        chosen_cards = [
-            suspect_mapping.get(chosen_suspect),
-            weapon_mapping.get(chosen_weapon),
-        ]
 
-    return chosen_cards
-
+        turn_ended = True
+        current_action_type = -1
+        accusation_action_message = clue_messaging.Message(
+            clue_messaging.Message_Types.ACCUSATION_ACTION,
+            game_id,
+            chosen_cards,
+            player_state,
+        )
+        game_board.buttons_enabled = False
+        send_message(accusation_action_message)
 
 # Handle collecting user input for a suggestion
-def handle_suggest(player_state):
+def handle_suggest(chosen_suspect, chosen_weapon):
     global turn_ended
     global game_board
+    global player_state
+    global current_action_type
+
+    current_action_type = 2
+
+    if chosen_suspect is None:
+        choose_cards("SUSPECT")
+    elif chosen_weapon is None:
+        choose_cards("WEAPON")
+
+    chosen_cards = [
+        suspect_mapping.get(chosen_suspect),
+        weapon_mapping.get(chosen_weapon),
+    ]
 
     # If the player is in a room (not a hallway), give them the option to suggest
     if player_state.get_position().value >= HALLWAY_LIMIT:
         print("You cannot make a suggestion from a hallway.")
     else:
-        chosen_cards = choose_cards(False)
         chosen_cards.append(player_state.get_position())
         turn_ended = True
+        current_action_type = -1
         suggest_action_message = clue_messaging.Message(
             clue_messaging.Message_Types.SUGGESTION_ACTION,
             game_id,
@@ -504,28 +564,14 @@ def handle_show_card(sender, card, player_state):
         )
 
 
-# Handle collecting user input for the accusation and sending it to the server
-def handle_accuse(player_state):
+def end_turn():
     global turn_ended
     global game_board
-
-    chosen_cards = choose_cards(True)
-    turn_ended = True
-    accusation_action_message = clue_messaging.Message(
-        clue_messaging.Message_Types.ACCUSATION_ACTION,
-        game_id,
-        chosen_cards,
-        player_state,
-    )
-    game_board.buttons_enabled = False
-    send_message(accusation_action_message)
-
-
-def end_turn(player_state):
-    global turn_ended
-    global game_board
+    global current_action_type
+    global player_state
 
     turn_ended = True
+    current_action_type = -1
     game_state_update = clue_messaging.Message(
         clue_messaging.Message_Types.GAME_STATE_UPDATE, game_id, None, player_state
     )
@@ -537,7 +583,7 @@ def end_turn(player_state):
 action_options = {
     "1": handle_move,
     "2": handle_suggest,
-    "3": handle_accuse,
+    "3": handle_accuse_noargs,
     "4": show_cards,
     "5": end_turn,
 }
@@ -672,10 +718,12 @@ def main():
     global lobby_screen
     global game_board
     global game_id
+    global current_action_type
 
     pygame.init()
     player_name = ""
     game_id = -1
+    current_action_type = -1
 
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     font = pygame.font.SysFont(None, 28)
@@ -709,12 +757,40 @@ def main():
 
     game_board = Game(screen, font, player_name, character_choice, game_id)
 
+    current_room_selection = None
+    current_suspect_selection = None
+    current_weapon_selection = None
     # Sleep while waiting for incoming messages
     while True:
         action = game_board.menu()
-        print(action)
+        print("Action Received in Clue_Client: " + action)
         if action in action_options:
             action_options[action]()
+        elif action in room_mapping:
+            print("It is a room!")
+            if current_action_type == 1:
+                update_player_pos(action)
+                game_board.remove_extra_buttons()
+            elif current_action_type == 3:
+                current_room_selection = action
+                handle_accuse(current_room_selection, None, None)
+        elif action in suspect_mapping:
+            print("It is a suspect!")
+            if current_action_type == 3:
+                current_suspect_selection = action
+                handle_accuse(current_room_selection, current_suspect_selection, None)
+            else:
+                print("Given suspect does not correspond with an ongoing action")
+        elif action in weapon_mapping:
+            print("It is a weapon!")
+            if current_action_type == 3:
+                current_weapon_selection = action
+                handle_accuse(current_room_selection, current_suspect_selection, current_weapon_selection)
+                current_room_selection = None
+                current_suspect_selection = None
+                current_weapon_selection = None
+            else:
+                print("Given suspect does not correspond with an ongoing action")
         else:
             print("Unknown Action")
 

@@ -126,6 +126,7 @@ def show_lobby_menu(lobby_roster):
     global lobby_screen
 
     lobby_screen.add_player(lobby_roster)
+    lobby_screen.set_game_id(game_id)
 
     # Text based version
     print("\nA NEW PLAYER HAS JOINED THE LOBBY!")

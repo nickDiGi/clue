@@ -14,6 +14,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (128, 128, 128)
 
+game_id = 11111
+
 #class Player:
 #    def __init__(self, name, character):
 #        self.name = name
@@ -34,8 +36,20 @@ class LobbyScreen:
                     already_in_lobby = True
             if not already_in_lobby: self.players.append(new_player)
 
+    def set_game_id(self, new_game_id):
+        global game_id
+        game_id = new_game_id
+
     def draw(self):
+        global game_id
+
         self.screen.fill(BLACK)
+
+        # Draw game ID label
+        game_id_font = pygame.font.SysFont(None, 24)
+        game_id_text = game_id_font.render(f"Game ID {game_id}", True, WHITE)
+        game_id_rect = game_id_text.get_rect(center=(SCREEN_WIDTH // 2, 20))
+        self.screen.blit(game_id_text, game_id_rect)
 
         title_font = pygame.font.SysFont(None, 36)
         title_text = title_font.render("Lobby", True, WHITE)
